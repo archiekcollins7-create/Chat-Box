@@ -8,52 +8,53 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
     
     body {
-      background-color: #050508;
+      background-color: #030305;
       color: #00ff66;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      width: 100vw;
       overflow: hidden;
       background-image: 
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04));
       background-size: 100% 4px, 6px 100%;
     }
 
     .cyber-shell {
-      width: 100vw;
-      height: 100vh;
-      background: rgba(10, 15, 12, 0.95);
+      width: 96vw;
+      height: 94vh;
+      background: rgba(8, 12, 10, 0.98);
       border: 2px solid #00ff66;
-      box-shadow: 0 0 25px rgba(0, 255, 102, 0.2);
+      box-shadow: 0 0 30px rgba(0, 255, 102, 0.25);
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 25px;
     }
 
     .shell-header {
-      border-bottom: 1px dashed #00ff66;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
+      border-bottom: 2px dashed #00ff66;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       letter-spacing: 2px;
     }
 
     .header-right {
       display: flex;
-      gap: 15px;
+      gap: 20px;
       align-items: center;
     }
 
     .header-right button {
       width: auto;
-      padding: 4px 10px;
+      padding: 6px 14px;
       margin-top: 0;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
     }
 
     .screen {
@@ -62,7 +63,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      max-width: 500px;
+      max-width: 650px;
       margin: auto;
       width: 100%;
     }
@@ -70,27 +71,29 @@
     .hidden { display: none !important; }
 
     h2, h3 {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       color: #00ff66;
-      text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      font-size: 1.6rem;
+      text-align: center;
     }
 
     input, select, button {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
+      padding: 16px;
+      margin-top: 15px;
       background: #000;
       border: 1px solid #00ff66;
       color: #00ff66;
-      font-size: 1rem;
+      font-size: 1.1rem;
       outline: none;
       border-radius: 0;
     }
 
     input:focus, select:focus {
-      box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+      box-shadow: 0 0 12px rgba(0, 255, 102, 0.6);
     }
 
     button {
@@ -105,7 +108,7 @@
 
     button:hover {
       background: #00cc52;
-      box-shadow: 0 0 15px #00ff66;
+      box-shadow: 0 0 20px #00ff66;
     }
 
     .btn-alt {
@@ -114,20 +117,20 @@
     }
 
     .btn-alt:hover {
-      background: rgba(0, 255, 102, 0.1);
+      background: rgba(0, 255, 102, 0.15);
       color: #00ff66;
-      box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+      box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
     }
 
     #error-msg {
       color: #ff3333;
-      text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
-      margin-top: 10px;
-      font-size: 0.9rem;
+      text-shadow: 0 0 6px rgba(255, 51, 51, 0.6);
+      margin-top: 15px;
+      font-size: 1rem;
       text-align: center;
     }
 
-    /* Full Chat Screen Layout */
+    /* Full Screen Chat Screen Layout */
     #chat-screen {
       max-width: 100%;
       height: 100%;
@@ -139,35 +142,36 @@
       justify-content: space-between;
       align-items: center;
       background: #051a0c;
-      padding: 10px 15px;
+      padding: 12px 20px;
       border: 1px solid #00ff66;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
 
     .chat-topbar button {
       width: auto;
-      padding: 6px 12px;
+      padding: 8px 16px;
       margin-top: 0;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
     }
 
     #messages-container {
       flex: 1;
       background: #020803;
       border: 1px solid #003311;
-      padding: 15px;
+      padding: 20px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .msg-bubble {
       background: #0d2614;
-      border-left: 3px solid #00ff66;
-      padding: 8px 12px;
-      max-width: 75%;
+      border-left: 4px solid #00ff66;
+      padding: 12px 16px;
+      max-width: 70%;
       word-break: break-word;
+      font-size: 1.05rem;
     }
 
     .msg-bubble.mine {
@@ -178,15 +182,15 @@
 
     .msg-bubble small {
       display: block;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       opacity: 0.6;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .send-box {
       display: flex;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 15px;
+      margin-top: 15px;
     }
 
     .send-box input {
@@ -194,12 +198,12 @@
     }
 
     .send-box button {
-      width: 120px;
+      width: 160px;
       margin-top: 0;
     }
 
-    /* Modal / Join Code Prompt Overlay */
-    #code-modal {
+    /* Modal / Code Overlay */
+    .cyber-modal {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.85);
@@ -209,11 +213,11 @@
       z-index: 100;
     }
     .modal-box {
-      background: #0a0f0c;
+      background: #080d0a;
       border: 2px solid #00ff66;
-      padding: 25px;
-      width: 350px;
-      box-shadow: 0 0 20px rgba(0,255,102,0.4);
+      padding: 30px;
+      width: 450px;
+      box-shadow: 0 0 25px rgba(0,255,102,0.4);
     }
   </style>
 </head>
@@ -221,7 +225,7 @@
 
   <div class="cyber-shell">
     <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v2.8</span>
+      <span>SYS_ID: SECURE_CHAT_v3.0</span>
       <div class="header-right">
         <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
         <button id="logout-btn" class="btn-alt hidden" onclick="logoutUser()">LOGOUT</button>
@@ -244,20 +248,21 @@
       <select id="room-select">
         <option value="General" data-code="">General (Public)</option>
       </select>
-      <button onclick="tryEnterRoom()">CONNECT TO ROOM</button>
+      <button onclick="tryEnterRoom()">CONNECT TO SELECTED ROOM</button>
+      <button class="btn-alt" onclick="openJoinCodeModal()">[+] JOIN ROOM VIA CODE</button>
       
-      <hr style="border:0; border-top:1px dashed #00ff66; margin:20px 0; width:100%;">
+      <hr style="border:0; border-top:1px dashed #00ff66; margin:25px 0; width:100%;">
       
-      <h3 style="font-size: 0.9rem;">CREATE SECURE ROOM</h3>
+      <h3 style="font-size: 1.1rem;">CREATE SECURE ROOM</h3>
       <input type="text" id="new-room-name" placeholder="NEW ROOM NAME" autocomplete="off">
-      <input type="password" id="new-room-code" placeholder="SET ACCESS CODE (OPTIONAL)">
-      <button class="btn-alt" onclick="createRoom()">INITIALIZE ROOM</button>
+      <input type="password" id="new-room-code" placeholder="SET NUMERIC ACCESS CODE (E.G. 1234)">
+      <button class="btn-alt" onclick="createRoom()">INITIALIZE & JOIN ROOM</button>
     </div>
 
     <!-- 3. FULL CHAT SCREEN -->
     <div class="screen hidden" id="chat-screen">
       <div class="chat-topbar">
-        <span id="active-room-title">ROOM: GENERAL</span>
+        <span id="active-room-title" style="font-size: 1.1rem; letter-spacing: 1px;">ROOM: GENERAL</span>
         <button class="btn-alt" onclick="leaveRoom()">DISCONNECT</button>
       </div>
       <div id="messages-container"></div>
@@ -270,14 +275,27 @@
   </div>
 
   <!-- PASSWORD ENTRY MODAL FOR LOCKED ROOMS -->
-  <div id="code-modal" class="hidden">
+  <div id="code-modal" class="cyber-modal hidden">
     <div class="modal-box">
       <h3>SECURE ROOM ACCESS</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 10px;">This room requires a security code.</p>
+      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">This room requires a security code.</p>
       <input type="password" id="modal-code-input" placeholder="ENTER ACCESS CODE">
-      <button onclick="verifyRoomCode()" style="margin-top: 15px;">AUTHENTICATE</button>
-      <button class="btn-alt" onclick="closeModal()" style="margin-top: 8px;">CANCEL</button>
-      <div id="modal-error" style="color: #ff3333; font-size: 0.8rem; margin-top: 8px;"></div>
+      <button onclick="verifyRoomCode()" style="margin-top: 20px;">AUTHENTICATE</button>
+      <button class="btn-alt" onclick="closeModal()" style="margin-top: 10px;">CANCEL</button>
+      <div id="modal-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- DIRECT JOIN VIA CODE MODAL -->
+  <div id="direct-code-modal" class="cyber-modal hidden">
+    <div class="modal-box">
+      <h3>JOIN ROOM BY CODE</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">Enter the exact room name and code provided by your friend.</p>
+      <input type="text" id="direct-room-name-input" placeholder="EXACT ROOM NAME" autocomplete="off">
+      <input type="password" id="direct-room-code-input" placeholder="ROOM NUMBER CODE" style="margin-top: 10px;">
+      <button onclick="joinRoomByCode()" style="margin-top: 20px;">CONNECT ONLINE</button>
+      <button class="btn-alt" onclick="closeDirectModal()" style="margin-top: 10px;">CANCEL</button>
+      <div id="direct-modal-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px;"></div>
     </div>
   </div>
 
@@ -380,11 +398,6 @@
       if (!name) return;
 
       let rooms = getRooms();
-      if (rooms[name]) {
-        alert('[ERROR] ROOM ALREADY EXISTS.');
-        return;
-      }
-
       rooms[name] = { code: code };
       localStorage.setItem('cyber_rooms', JSON.stringify(rooms));
       
@@ -425,6 +438,37 @@
     function closeModal() {
       document.getElementById('code-modal').classList.add('hidden');
       pendingRoom = '';
+    }
+
+    function openJoinCodeModal() {
+      document.getElementById('direct-room-name-input').value = '';
+      document.getElementById('direct-room-code-input').value = '';
+      document.getElementById('direct-modal-error').textContent = '';
+      document.getElementById('direct-code-modal').classList.remove('hidden');
+    }
+
+    function closeDirectModal() {
+      document.getElementById('direct-code-modal').classList.add('hidden');
+    }
+
+    function joinRoomByCode() {
+      const rName = document.getElementById('direct-room-name-input').value.trim();
+      const rCode = document.getElementById('direct-room-code-input').value;
+      const rooms = getRooms();
+      const errDiv = document.getElementById('direct-modal-error');
+
+      if (!rooms[rName]) {
+        errDiv.textContent = '[ERROR] ROOM DOES NOT EXIST.';
+        return;
+      }
+
+      if (rooms[rName].code !== rCode) {
+        errDiv.textContent = '[ACCESS DENIED] INVALID CODE.';
+        return;
+      }
+
+      closeDirectModal();
+      enterRoom(rName);
     }
 
     function enterRoom(roomName) {

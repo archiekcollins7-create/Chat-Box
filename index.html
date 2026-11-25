@@ -208,7 +208,7 @@
 
   <div class="cyber-shell">
     <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v2.6</span>
+      <span>SYS_ID: SECURE_CHAT_v2.7</span>
       <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
     </div>
 
@@ -225,7 +225,7 @@
     <!-- 2. ROOM SELECTION SCREEN -->
     <div class="screen hidden" id="room-screen">
       <h2>SELECT PROTOCOL ROOM</h2>
-      <select id="room-select" onchange="checkRoomProtected()">
+      <select id="room-select">
         <option value="General" data-code="">General (Public)</option>
       </select>
       <button onclick="tryEnterRoom()">CONNECT TO ROOM</button>
@@ -347,7 +347,9 @@
       document.getElementById('new-room-name').value = '';
       document.getElementById('new-room-code').value = '';
       loadRoomsDropdown();
-      alert(`[SUCCESS] ROOM "${name.toUpperCase()}" INITIALIZED.`);
+
+      // Instantly jump straight into the newly created room!
+      enterRoom(name);
     }
 
     function tryEnterRoom() {
@@ -393,6 +395,7 @@
     function leaveRoom() {
       document.getElementById('chat-screen').classList.add('hidden');
       document.getElementById('room-screen').classList.remove('hidden');
+      loadRoomsDropdown();
     }
 
     function sendMessage(e) {

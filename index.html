@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Network Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Chat App</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     body { background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -11,113 +12,182 @@
     input, select { background: #2b2b36; color: #fff; }
     button { background: #4f46e5; color: #fff; font-weight: bold; cursor: pointer; }
     button:hover { background: #4338ca; }
+    .secondary { background: #3a3a48; }
+    .secondary:hover { background: #4e4e5e; }
     .hidden { display: none !important; }
     #error { color: #ff4d4d; font-size: 0.85rem; margin-top: 8px; text-align: center; }
-    #chat-box { max-width: 500px; height: 500px; display: flex; flex-direction: column; }
+    
+    #chat-box { max-width: 500px; height: 550px; display: flex; flex-direction: column; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .top-bar button { width: auto; margin-top: 0; padding: 6px 10px; font-size: 0.8rem; }
     #messages { flex: 1; background: #121212; padding: 10px; border-radius: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
     .msg { background: #2f2f3b; padding: 6px 10px; border-radius: 4px; word-break: break-word; }
     .msg.mine { background: #4f46e5; align-self: flex-end; }
-    .msg small { display: block; font-size: 0.7rem; opacity: 0.7; }
+    .msg small { display: block; font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px; }
   </style>
 </head>
 <body>
 
-  <!-- Login Screen -->
-  <div class="box" id="auth-box">
-    <h2>Chat Login</h2>
+  <!-- 1. LOGIN / REGISTER SCREEN -->
+  <div class="box" id="auth-screen">
+    <h2>Chat App Login</h2>
     <input type="text" id="username" placeholder="Username" autocomplete="off">
     <input type="password" id="password" placeholder="Password">
-    <button onclick="auth('login')">Log In</button>
-    <button onclick="auth('register')" style="background: #3a3a48;">Register</button>
+    <button onclick="handleAuth('login')">Log In</button>
+    <button class="secondary" onclick="handleAuth('register')">Register Account</button>
     <div id="error"></div>
   </div>
 
-  <!-- Room Screen -->
-  <div class="box hidden" id="room-box">
-    <h2>Select Room</h2>
-    <select id="room-list"></select>
-    <button onclick="joinRoom()">Join Room</button>
+  <!-- 2. ROOM SELECTION SCREEN -->
+  <div class="box hidden" id="room-screen">
+    <h2>Select a Room</h2>
+    <select id="room-select">
+      <option value="General">General</option>
+      <option value="Gaming">Gaming</option>
+      <option value="Study">Study</option>
+    </select>
+    <button onclick="joinRoom()">Enter Room</button>
+    
     <hr style="border:0; border-top:1px solid #3a3a48; margin:15px 0;">
-    <input type="text" id="new-room" placeholder="New room name...">
-    <button onclick="createRoom()" style="background: #3a3a48;">Create Room</button>
+    
+    <input type="text" id="new-room-input" placeholder="New room name...">
+    <button class="secondary" onclick="createRoom()">Create Room</button>
   </div>
 
-  <!-- Chat Screen -->
-  <div class="box hidden" id="chat-box">
-    <h3 id="room-title" style="margin-bottom: 10px;">Room</h3>
+  <!-- 3. CHAT SCREEN -->
+  <div class="box hidden" id="chat-screen">
+    <div class="top-bar">
+      <h3 id="room-title">Room</h3>
+      <button class="secondary" onclick="switchRoom()">Switch Room</button>
+    </div>
     <div id="messages"></div>
-    <form style="display: flex; gap: 6px; margin-top: 10px;" onsubmit="send(event)">
+    <form style="display: flex; gap: 6px; margin-top: 10px;" onsubmit="sendMessage(event)">
       <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off" required style="margin-top:0;">
       <button type="submit" style="margin-top:0; width: 80px;">Send</button>
     </form>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
-    let myUser = '', myRoom = '';
+    let currentUser = '';
+    let currentRoom = '';
 
-    function auth(action) {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      if (!username || !password) return;
-      socket.emit('auth', { username, password, action });
+    // Load registered users from browser storage
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('chat_users')) || {};
     }
 
-    socket.on('auth-success', ({ username, rooms }) => {
-      myUser = username;
-      updateRooms(rooms);
-      document.getElementById('auth-box').classList.add('hidden');
-      document.getElementById('room-box').classList.remove('hidden');
-    });
+    // Load chat messages
+    function getAllMessages() {
+      return JSON.parse(localStorage.getItem('chat_messages')) || {};
+    }
 
-    socket.on('auth-error', (err) => { document.getElementById('error').textContent = err; });
-    socket.on('update-rooms', updateRooms);
+    function handleAuth(action) {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = '';
 
-    function updateRooms(rooms) {
-      const sel = document.getElementById('room-list');
-      sel.innerHTML = '';
-      rooms.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r; opt.textContent = r;
-        sel.appendChild(opt);
-      });
+      if (!user || !pass) {
+        errorDiv.textContent = 'Please fill out all fields.';
+        return;
+      }
+
+      let users = getUsers();
+
+      if (action === 'register') {
+        if (users[user]) {
+          errorDiv.textContent = 'Username already taken!';
+          return;
+        }
+        users[user] = pass;
+        localStorage.setItem('chat_users', JSON.stringify(users));
+        alert('Account registered successfully! Now log in.');
+      } else {
+        if (!users[user] || users[user] !== pass) {
+          errorDiv.textContent = 'Wrong username or password!';
+          return;
+        }
+        currentUser = user;
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('room-screen').classList.remove('hidden');
+      }
     }
 
     function createRoom() {
-      const name = document.getElementById('new-room').value.trim();
-      if (name) socket.emit('create-room', name);
-      document.getElementById('new-room').value = '';
+      const roomName = document.getElementById('new-room-input').value.trim();
+      if (!roomName) return;
+      const select = document.getElementById('room-select');
+      
+      // Check if room already exists in dropdown
+      let exists = false;
+      for (let opt of select.options) {
+        if (opt.value === roomName) exists = true;
+      }
+
+      if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = roomName;
+        opt.textContent = roomName;
+        select.appendChild(opt);
+      }
+      document.getElementById('new-room-input').value = '';
+      alert(`Room "${roomName}" created!`);
     }
 
     function joinRoom() {
-      myRoom = document.getElementById('room-list').value;
-      document.getElementById('room-box').classList.add('hidden');
-      document.getElementById('chat-box').classList.remove('hidden');
-      document.getElementById('room-title').textContent = `Room: ${myRoom}`;
-      document.getElementById('messages').innerHTML = '';
-      socket.emit('join-room', { room: myRoom, username: myUser });
+      currentRoom = document.getElementById('room-select').value;
+      document.getElementById('room-screen').classList.add('hidden');
+      document.getElementById('chat-screen').classList.remove('hidden');
+      document.getElementById('room-title').textContent = `Room: ${currentRoom}`;
+      renderMessages();
     }
 
-    function send(e) {
+    function switchRoom() {
+      document.getElementById('chat-screen').classList.add('hidden');
+      document.getElementById('room-screen').classList.remove('hidden');
+    }
+
+    function sendMessage(e) {
       e.preventDefault();
       const input = document.getElementById('msg-input');
-      if (!input.value.trim()) return;
-      socket.emit('chat-message', { room: myRoom, username: myUser, text: input.value.trim() });
+      const text = input.value.trim();
+      if (!text) return;
+
+      let allMessages = getAllMessages();
+      if (!allMessages[currentRoom]) {
+        allMessages[currentRoom] = [];
+      }
+
+      allMessages[currentRoom].push({ user: currentUser, text: text });
+      localStorage.setItem('chat_messages', JSON.stringify(allMessages));
+
       input.value = '';
+      renderMessages();
     }
 
-    socket.on('load-history', (history) => history.forEach(addMsg));
-    socket.on('message', addMsg);
+    function renderMessages() {
+      const messagesBox = document.getElementById('messages');
+      messagesBox.innerHTML = '';
 
-    function addMsg(data) {
-      const div = document.createElement('div');
-      div.className = 'msg' + (data.user === myUser ? ' mine' : '');
-      div.innerHTML = `<small>${data.user}</small>${data.text}`;
-      const box = document.getElementById('messages');
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
+      let allMessages = getAllMessages();
+      let roomMsgs = allMessages[currentRoom] || [];
+
+      roomMsgs.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'msg' + (msg.user === currentUser ? ' mine' : '');
+        div.innerHTML = `<small>${msg.user}</small>${msg.text}`;
+        messagesBox.appendChild(div);
+      });
+
+      messagesBox.scrollTop = messagesBox.scrollHeight;
     }
+
+    // Sync messages across different tabs if open on the same computer
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'chat_messages') {
+        renderMessages();
+      }
+    });
   </script>
 </body>
 </html>

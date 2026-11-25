@@ -3,92 +3,293 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Chat App</title>
+  <title>CYBER_CHAT // SECURE_TERMINAL</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .box { width: 100%; max-width: 400px; background: #1e1e24; padding: 24px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    input, select, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 4px; border: none; outline: none; }
-    input, select { background: #2b2b36; color: #fff; }
-    button { background: #4f46e5; color: #fff; font-weight: bold; cursor: pointer; }
-    button:hover { background: #4338ca; }
-    .secondary { background: #3a3a48; }
-    .secondary:hover { background: #4e4e5e; }
-    .hidden { display: none !important; }
-    #error { color: #ff4d4d; font-size: 0.85rem; margin-top: 8px; text-align: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
     
-    #chat-box { max-width: 500px; height: 550px; display: flex; flex-direction: column; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .top-bar button { width: auto; margin-top: 0; padding: 6px 10px; font-size: 0.8rem; }
-    #messages { flex: 1; background: #121212; padding: 10px; border-radius: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .msg { background: #2f2f3b; padding: 6px 10px; border-radius: 4px; word-break: break-word; }
-    .msg.mine { background: #4f46e5; align-self: flex-end; }
-    .msg small { display: block; font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px; }
+    body {
+      background-color: #050508;
+      color: #00ff66;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      background-image: 
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 6px 100%;
+    }
+
+    .cyber-shell {
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 15, 12, 0.95);
+      border: 2px solid #00ff66;
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.2);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .shell-header {
+      border-bottom: 1px dashed #00ff66;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    .screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 500px;
+      margin: auto;
+      width: 100%;
+    }
+
+    .hidden { display: none !important; }
+
+    h2, h3 {
+      margin-bottom: 15px;
+      color: #00ff66;
+      text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: #000;
+      border: 1px solid #00ff66;
+      color: #00ff66;
+      font-size: 1rem;
+      outline: none;
+      border-radius: 0;
+    }
+
+    input:focus, select:focus {
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+    }
+
+    button {
+      background: #00ff66;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #00cc52;
+      box-shadow: 0 0 15px #00ff66;
+    }
+
+    .btn-alt {
+      background: transparent;
+      color: #00ff66;
+    }
+
+    .btn-alt:hover {
+      background: rgba(0, 255, 102, 0.1);
+      color: #00ff66;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+    }
+
+    #error-msg {
+      color: #ff3333;
+      text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+      margin-top: 10px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* Full Chat Screen Layout */
+    #chat-screen {
+      max-width: 100%;
+      height: 100%;
+      justify-content: flex-start;
+    }
+
+    .chat-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #051a0c;
+      padding: 10px 15px;
+      border: 1px solid #00ff66;
+      margin-bottom: 10px;
+    }
+
+    .chat-topbar button {
+      width: auto;
+      padding: 6px 12px;
+      margin-top: 0;
+      font-size: 0.8rem;
+    }
+
+    #messages-container {
+      flex: 1;
+      background: #020803;
+      border: 1px solid #003311;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-bubble {
+      background: #0d2614;
+      border-left: 3px solid #00ff66;
+      padding: 8px 12px;
+      max-width: 75%;
+      word-break: break-word;
+    }
+
+    .msg-bubble.mine {
+      background: #14331e;
+      border-left-color: #00ffff;
+      align-self: flex-end;
+    }
+
+    .msg-bubble small {
+      display: block;
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-bottom: 3px;
+    }
+
+    .send-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .send-box input {
+      margin-top: 0;
+    }
+
+    .send-box button {
+      width: 120px;
+      margin-top: 0;
+    }
+
+    /* Modal / Join Code Prompt Overlay */
+    #code-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal-box {
+      background: #0a0f0c;
+      border: 2px solid #00ff66;
+      padding: 25px;
+      width: 350px;
+      box-shadow: 0 0 20px rgba(0,255,102,0.4);
+    }
   </style>
 </head>
 <body>
 
-  <!-- 1. LOGIN / REGISTER SCREEN -->
-  <div class="box" id="auth-screen">
-    <h2>Chat App Login</h2>
-    <input type="text" id="username" placeholder="Username" autocomplete="off">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="handleAuth('login')">Log In</button>
-    <button class="secondary" onclick="handleAuth('register')">Register Account</button>
-    <div id="error"></div>
-  </div>
-
-  <!-- 2. ROOM SELECTION SCREEN -->
-  <div class="box hidden" id="room-screen">
-    <h2>Select a Room</h2>
-    <select id="room-select">
-      <option value="General">General</option>
-      <option value="Gaming">Gaming</option>
-      <option value="Study">Study</option>
-    </select>
-    <button onclick="joinRoom()">Enter Room</button>
-    
-    <hr style="border:0; border-top:1px solid #3a3a48; margin:15px 0;">
-    
-    <input type="text" id="new-room-input" placeholder="New room name...">
-    <button class="secondary" onclick="createRoom()">Create Room</button>
-  </div>
-
-  <!-- 3. CHAT SCREEN -->
-  <div class="box hidden" id="chat-screen">
-    <div class="top-bar">
-      <h3 id="room-title">Room</h3>
-      <button class="secondary" onclick="switchRoom()">Switch Room</button>
+  <div class="cyber-shell">
+    <div class="shell-header">
+      <span>SYS_ID: SECURE_CHAT_v2.6</span>
+      <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
     </div>
-    <div id="messages"></div>
-    <form style="display: flex; gap: 6px; margin-top: 10px;" onsubmit="sendMessage(event)">
-      <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off" required style="margin-top:0;">
-      <button type="submit" style="margin-top:0; width: 80px;">Send</button>
-    </form>
+
+    <!-- 1. AUTH SCREEN -->
+    <div class="screen" id="auth-screen">
+      <h2>AUTHENTICATION REQUIRED</h2>
+      <input type="text" id="username" placeholder="ENTER USERNAME" autocomplete="off">
+      <input type="password" id="password" placeholder="ENTER PASSWORD">
+      <button onclick="handleAuth('login')">ACCESS TERMINAL</button>
+      <button class="btn-alt" onclick="handleAuth('register')">REGISTER NEW USER</button>
+      <div id="error-msg"></div>
+    </div>
+
+    <!-- 2. ROOM SELECTION SCREEN -->
+    <div class="screen hidden" id="room-screen">
+      <h2>SELECT PROTOCOL ROOM</h2>
+      <select id="room-select" onchange="checkRoomProtected()">
+        <option value="General" data-code="">General (Public)</option>
+      </select>
+      <button onclick="tryEnterRoom()">CONNECT TO ROOM</button>
+      
+      <hr style="border:0; border-top:1px dashed #00ff66; margin:20px 0; width:100%;">
+      
+      <h3 style="font-size: 0.9rem;">CREATE SECURE ROOM</h3>
+      <input type="text" id="new-room-name" placeholder="NEW ROOM NAME" autocomplete="off">
+      <input type="password" id="new-room-code" placeholder="SET ACCESS CODE (OPTIONAL)">
+      <button class="btn-alt" onclick="createRoom()">INITIALIZE ROOM</button>
+    </div>
+
+    <!-- 3. FULL CHAT SCREEN -->
+    <div class="screen hidden" id="chat-screen">
+      <div class="chat-topbar">
+        <span id="active-room-title">ROOM: GENERAL</span>
+        <button class="btn-alt" onclick="leaveRoom()">DISCONNECT</button>
+      </div>
+      <div id="messages-container"></div>
+      <form class="send-box" onsubmit="sendMessage(event)">
+        <input type="text" id="msg-input" placeholder="TYPE TRANSMISSION..." autocomplete="off" required>
+        <button type="submit">TRANSMIT</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- PASSWORD ENTRY MODAL FOR LOCKED ROOMS -->
+  <div id="code-modal" class="hidden">
+    <div class="modal-box">
+      <h3>SECURE ROOM ACCESS</h3>
+      <p style="font-size: 0.85rem; margin-bottom: 10px;">This room requires a security code.</p>
+      <input type="password" id="modal-code-input" placeholder="ENTER ACCESS CODE">
+      <button onclick="verifyRoomCode()" style="margin-top: 15px;">AUTHENTICATE</button>
+      <button class="btn-alt" onclick="closeModal()" style="margin-top: 8px;">CANCEL</button>
+      <div id="modal-error" style="color: #ff3333; font-size: 0.8rem; margin-top: 8px;"></div>
+    </div>
   </div>
 
   <script>
     let currentUser = '';
     let currentRoom = '';
+    let pendingRoom = '';
 
-    // Load registered users from browser storage
     function getUsers() {
-      return JSON.parse(localStorage.getItem('chat_users')) || {};
+      return JSON.parse(localStorage.getItem('cyber_users')) || {};
     }
 
-    // Load chat messages
-    function getAllMessages() {
-      return JSON.parse(localStorage.getItem('chat_messages')) || {};
+    function getRooms() {
+      return JSON.parse(localStorage.getItem('cyber_rooms')) || { General: { code: '' } };
+    }
+
+    function getMessages() {
+      return JSON.parse(localStorage.getItem('cyber_messages')) || {};
     }
 
     function handleAuth(action) {
       const user = document.getElementById('username').value.trim();
       const pass = document.getElementById('password').value;
-      const errorDiv = document.getElementById('error');
-      errorDiv.textContent = '';
+      const err = document.getElementById('error-msg');
+      err.textContent = '';
 
       if (!user || !pass) {
-        errorDiv.textContent = 'Please fill out all fields.';
+        err.textContent = '[ERROR] ALL FIELDS REQUIRED.';
         return;
       }
 
@@ -96,53 +297,100 @@
 
       if (action === 'register') {
         if (users[user]) {
-          errorDiv.textContent = 'Username already taken!';
+          err.textContent = '[ERROR] USERNAME ALREADY EXISTS.';
           return;
         }
         users[user] = pass;
-        localStorage.setItem('chat_users', JSON.stringify(users));
-        alert('Account registered successfully! Now log in.');
+        localStorage.setItem('cyber_users', JSON.stringify(users));
+        alert('[SUCCESS] USER REGISTERED. YOU MAY NOW LOGIN.');
       } else {
         if (!users[user] || users[user] !== pass) {
-          errorDiv.textContent = 'Wrong username or password!';
+          err.textContent = '[ERROR] ACCESS DENIED: INVALID CREDENTIALS.';
           return;
         }
         currentUser = user;
+        document.getElementById('status-user').textContent = `USER: ${currentUser.toUpperCase()}`;
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('room-screen').classList.remove('hidden');
+        loadRoomsDropdown();
+      }
+    }
+
+    function loadRoomsDropdown() {
+      const select = document.getElementById('room-select');
+      const rooms = getRooms();
+      select.innerHTML = '';
+      
+      for (let rName in rooms) {
+        const opt = document.createElement('option');
+        opt.value = rName;
+        opt.textContent = rName + (rooms[rName].code ? ' [SECURE]' : '');
+        opt.dataset.protected = rooms[rName].code ? 'true' : 'false';
+        select.appendChild(opt);
       }
     }
 
     function createRoom() {
-      const roomName = document.getElementById('new-room-input').value.trim();
-      if (!roomName) return;
-      const select = document.getElementById('room-select');
-      
-      // Check if room already exists in dropdown
-      let exists = false;
-      for (let opt of select.options) {
-        if (opt.value === roomName) exists = true;
+      const name = document.getElementById('new-room-name').value.trim();
+      const code = document.getElementById('new-room-code').value;
+      if (!name) return;
+
+      let rooms = getRooms();
+      if (rooms[name]) {
+        alert('[ERROR] ROOM ALREADY EXISTS.');
+        return;
       }
 
-      if (!exists) {
-        const opt = document.createElement('option');
-        opt.value = roomName;
-        opt.textContent = roomName;
-        select.appendChild(opt);
-      }
-      document.getElementById('new-room-input').value = '';
-      alert(`Room "${roomName}" created!`);
+      rooms[name] = { code: code };
+      localStorage.setItem('cyber_rooms', JSON.stringify(rooms));
+      
+      document.getElementById('new-room-name').value = '';
+      document.getElementById('new-room-code').value = '';
+      loadRoomsDropdown();
+      alert(`[SUCCESS] ROOM "${name.toUpperCase()}" INITIALIZED.`);
     }
 
-    function joinRoom() {
-      currentRoom = document.getElementById('room-select').value;
+    function tryEnterRoom() {
+      const select = document.getElementById('room-select');
+      const selectedOpt = select.options[select.selectedIndex];
+      pendingRoom = selectedOpt.value;
+      const isProtected = selectedOpt.dataset.protected === 'true';
+
+      if (isProtected) {
+        document.getElementById('modal-code-input').value = '';
+        document.getElementById('modal-error').textContent = '';
+        document.getElementById('code-modal').classList.remove('hidden');
+      } else {
+        enterRoom(pendingRoom);
+      }
+    }
+
+    function verifyRoomCode() {
+      const inputCode = document.getElementById('modal-code-input').value;
+      const rooms = getRooms();
+
+      if (rooms[pendingRoom].code === inputCode) {
+        closeModal();
+        enterRoom(pendingRoom);
+      } else {
+        document.getElementById('modal-error').textContent = '[ACCESS DENIED] INVALID CODE.';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('code-modal').classList.add('hidden');
+      pendingRoom = '';
+    }
+
+    function enterRoom(roomName) {
+      currentRoom = roomName;
       document.getElementById('room-screen').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
-      document.getElementById('room-title').textContent = `Room: ${currentRoom}`;
+      document.getElementById('active-room-title').textContent = `ROOM: ${currentRoom.toUpperCase()}`;
       renderMessages();
     }
 
-    function switchRoom() {
+    function leaveRoom() {
       document.getElementById('chat-screen').classList.add('hidden');
       document.getElementById('room-screen').classList.remove('hidden');
     }
@@ -153,40 +401,37 @@
       const text = input.value.trim();
       if (!text) return;
 
-      let allMessages = getAllMessages();
-      if (!allMessages[currentRoom]) {
-        allMessages[currentRoom] = [];
-      }
+      let allMsgs = getMessages();
+      if (!allMsgs[currentRoom]) allMsgs[currentRoom] = [];
 
-      allMessages[currentRoom].push({ user: currentUser, text: text });
-      localStorage.setItem('chat_messages', JSON.stringify(allMessages));
+      allMsgs[currentRoom].push({ user: currentUser, text: text });
+      localStorage.setItem('cyber_messages', JSON.stringify(allMsgs));
 
       input.value = '';
       renderMessages();
     }
 
     function renderMessages() {
-      const messagesBox = document.getElementById('messages');
-      messagesBox.innerHTML = '';
+      const container = document.getElementById('messages-container');
+      container.innerHTML = '';
 
-      let allMessages = getAllMessages();
-      let roomMsgs = allMessages[currentRoom] || [];
+      let allMsgs = getMessages();
+      let roomMsgs = allMsgs[currentRoom] || [];
 
-      roomMsgs.forEach(msg => {
+      roomMsgs.forEach(m => {
         const div = document.createElement('div');
-        div.className = 'msg' + (msg.user === currentUser ? ' mine' : '');
-        div.innerHTML = `<small>${msg.user}</small>${msg.text}`;
-        messagesBox.appendChild(div);
+        div.className = 'msg-bubble' + (m.user === currentUser ? ' mine' : '');
+        div.innerHTML = `<small>${m.user}</small>${m.text}`;
+        container.appendChild(div);
       });
 
-      messagesBox.scrollTop = messagesBox.scrollHeight;
+      container.scrollTop = container.scrollHeight;
     }
 
-    // Sync messages across different tabs if open on the same computer
+    // Sync across browser tabs automatically
     window.addEventListener('storage', (e) => {
-      if (e.key === 'chat_messages') {
-        renderMessages();
-      }
+      if (e.key === 'cyber_messages') renderMessages();
+      if (e.key === 'cyber_rooms') loadRoomsDropdown();
     });
   </script>
 </body>

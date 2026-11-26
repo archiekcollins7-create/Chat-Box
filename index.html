@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBER_CHAT // SECURE_TERMINAL</title>
+  <title>CYBER_CHAT // CLOUD_TERMINAL</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
     
@@ -122,7 +127,7 @@
       box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
     }
 
-    #error-msg, #room-error {
+    #error-msg {
       color: #ff3333;
       text-shadow: 0 0 6px rgba(255, 51, 51, 0.6);
       margin-top: 15px;
@@ -130,7 +135,7 @@
       text-align: center;
     }
 
-    /* Full Screen Chat Screen Layout */
+    /* Full Screen Chat Layout */
     #chat-screen {
       max-width: 100%;
       height: 100%;
@@ -202,7 +207,7 @@
       margin-top: 0;
     }
 
-    /* Modal / Code Overlay */
+    /* Modal Overlays */
     .cyber-modal {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -225,9 +230,9 @@
 
   <div class="cyber-shell">
     <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v4.1_LIVE</span>
+      <span>SYS_ID: SECURE_CHAT_v6.0_CLOUD</span>
       <div class="header-right">
-        <span id="status-user" style="color: #00ffff;">STATUS: CONNECTING...</span>
+        <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
         <button id="logout-btn" class="btn-alt hidden" onclick="logoutUser()">LOGOUT</button>
       </div>
     </div>
@@ -242,7 +247,7 @@
       <div id="error-msg"></div>
     </div>
 
-    <!-- 2. ROOM SELECTION SCREEN -->
+    <!-- 2. ROOM SCREEN -->
     <div class="screen hidden" id="room-screen">
       <h2>SELECT PROTOCOL ROOM</h2>
       <select id="room-select">
@@ -257,10 +262,10 @@
       <input type="text" id="new-room-name" placeholder="NEW ROOM NAME" autocomplete="off">
       <input type="password" id="new-room-code" placeholder="SET NUMERIC ACCESS CODE (OPTIONAL)">
       <button class="btn-alt" onclick="createRoom()">INITIALIZE & JOIN ROOM</button>
-      <div id="room-error"></div>
+      <div id="room-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px; text-align: center;"></div>
     </div>
 
-    <!-- 3. FULL CHAT SCREEN -->
+    <!-- 3. CHAT SCREEN -->
     <div class="screen hidden" id="chat-screen">
       <div class="chat-topbar">
         <div>
@@ -278,7 +283,7 @@
 
   </div>
 
-  <!-- PASSWORD ENTRY MODAL FOR LOCKED ROOMS -->
+  <!-- PASSWORD ENTRY MODAL -->
   <div id="code-modal" class="cyber-modal hidden">
     <div class="modal-box">
       <h3>SECURE ROOM ACCESS</h3>
@@ -294,32 +299,36 @@
   <div id="direct-code-modal" class="cyber-modal hidden">
     <div class="modal-box">
       <h3>JOIN ROOM BY CODE</h3>
-      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">Enter the exact room name and code provided by your friend.</p>
+      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">Enter the exact room name and code.</p>
       <input type="text" id="direct-room-name-input" placeholder="EXACT ROOM NAME" autocomplete="off">
       <input type="password" id="direct-room-code-input" placeholder="ROOM NUMBER CODE" style="margin-top: 10px;">
-      <button onclick="joinRoomByCode()" style="margin-top: 20px;">CONNECT ONLINE</button>
+      <button onclick="joinRoomByCode()" style="margin-top: 20px;">CONNECT</button>
       <button class="btn-alt" onclick="closeDirectModal()" style="margin-top: 10px;">CANCEL</button>
       <div id="direct-modal-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- Socket.io Library -->
-  <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
+    // ==========================================
+    // PASTE YOUR FIREBASE CONFIGURATION HERE:
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     let currentUser = '';
     let currentRoom = '';
     let pendingRoom = '';
+    let unsubscribeMessages = null;
 
-    socket.on('connect', () => {
-      document.getElementById('status-user').textContent = currentUser ? `USER: ${currentUser.toUpperCase()}` : 'STATUS: ONLINE';
-    });
-
-    socket.on('disconnect', () => {
-      document.getElementById('status-user').textContent = 'STATUS: OFFLINE (RECONNECTING...)';
-    });
-
-    // Check page load for saved user session
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('cyber_logged_in_user');
       if (savedUser) {
@@ -328,43 +337,51 @@
         document.getElementById('logout-btn').classList.remove('hidden');
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('room-screen').classList.remove('hidden');
-        socket.emit('get-rooms');
-      } else {
-        document.getElementById('status-user').textContent = 'STATUS: OFFLINE';
+        loadRoomsDropdown();
       }
     });
 
-    function handleAuth(action) {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
+    async function handleAuth(action) {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
       const err = document.getElementById('error-msg');
       err.textContent = '';
 
-      if (!username || !password) {
+      if (!user || !pass) {
         err.textContent = '[ERROR] ALL FIELDS REQUIRED.';
         return;
       }
 
-      socket.emit('auth', { username, password, action });
+      const userRef = db.collection('users').doc(user);
+      const doc = await userRef.get();
+
+      if (action === 'register') {
+        if (doc.exists) {
+          err.textContent = '[ERROR] USERNAME ALREADY EXISTS.';
+          return;
+        }
+        await userRef.set({ password: pass });
+        alert('[SUCCESS] USER REGISTERED. YOU MAY NOW LOGIN.');
+      } else {
+        if (!doc.exists || doc.data().password !== pass) {
+          err.textContent = '[ERROR] ACCESS DENIED: INVALID CREDENTIALS.';
+          return;
+        }
+        currentUser = user;
+        localStorage.setItem('cyber_logged_in_user', currentUser);
+        
+        document.getElementById('status-user').textContent = `USER: ${currentUser.toUpperCase()}`;
+        document.getElementById('logout-btn').classList.remove('hidden');
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('room-screen').classList.remove('hidden');
+        loadRoomsDropdown();
+      }
     }
-
-    socket.on('auth-success', (username) => {
-      currentUser = username;
-      localStorage.setItem('cyber_logged_in_user', currentUser);
-      document.getElementById('status-user').textContent = `USER: ${currentUser.toUpperCase()}`;
-      document.getElementById('logout-btn').classList.remove('hidden');
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('room-screen').classList.remove('hidden');
-      socket.emit('get-rooms');
-    });
-
-    socket.on('auth-error', (msg) => {
-      document.getElementById('error-msg').textContent = msg;
-    });
 
     function logoutUser() {
       localStorage.removeItem('cyber_logged_in_user');
       currentUser = '';
+      if (unsubscribeMessages) unsubscribeMessages();
       document.getElementById('status-user').textContent = 'STATUS: OFFLINE';
       document.getElementById('logout-btn').classList.add('hidden');
       document.getElementById('chat-screen').classList.add('hidden');
@@ -374,20 +391,24 @@
       document.getElementById('password').value = '';
     }
 
-    socket.on('update-rooms', (rooms) => {
+    async function loadRoomsDropdown() {
       const select = document.getElementById('room-select');
-      select.innerHTML = '';
+      const snapshot = await db.collection('rooms').get();
+      select.innerHTML = '<option value="General" data-code="">General (Public)</option>';
       
-      for (let rName in rooms) {
-        const opt = document.createElement('option');
-        opt.value = rName;
-        opt.textContent = rName + (rooms[rName].code ? ' [SECURE]' : '');
-        opt.dataset.protected = rooms[rName].code ? 'true' : 'false';
-        select.appendChild(opt);
-      }
-    });
+      snapshot.forEach(doc => {
+        if (doc.id !== 'General') {
+          const data = doc.data();
+          const opt = document.createElement('option');
+          opt.value = doc.id;
+          opt.textContent = doc.id + (data.code ? ' [SECURE]' : '');
+          opt.dataset.protected = data.code ? 'true' : 'false';
+          select.appendChild(opt);
+        }
+      });
+    }
 
-    function createRoom() {
+    async function createRoom() {
       const name = document.getElementById('new-room-name').value.trim();
       const code = document.getElementById('new-room-code').value;
       const errDiv = document.getElementById('room-error');
@@ -398,57 +419,55 @@
         return;
       }
 
-      socket.emit('create-room', { name, code });
+      const roomRef = db.collection('rooms').doc(name);
+      const doc = await roomRef.get();
+      if (doc.exists) {
+        errDiv.textContent = '[ERROR] ROOM ALREADY EXISTS.';
+        return;
+      }
+
+      await roomRef.set({ code: code });
       document.getElementById('new-room-name').value = '';
       document.getElementById('new-room-code').value = '';
+      await loadRoomsDropdown();
+
+      enterRoom(name, code);
     }
 
-    function tryEnterRoom() {
+    async function tryEnterRoom() {
       const select = document.getElementById('room-select');
       const selectedOpt = select.options[select.selectedIndex];
       if (!selectedOpt) return;
-      
+
       pendingRoom = selectedOpt.value;
       const isProtected = selectedOpt.dataset.protected === 'true';
+
+      if (pendingRoom === 'General') {
+        enterRoom('General', '');
+        return;
+      }
 
       if (isProtected) {
         document.getElementById('modal-code-input').value = '';
         document.getElementById('modal-error').textContent = '';
         document.getElementById('code-modal').classList.remove('hidden');
       } else {
-        socket.emit('join-room', { room: pendingRoom, code: '' });
+        const doc = await db.collection('rooms').doc(pendingRoom).get();
+        enterRoom(pendingRoom, doc.data().code);
       }
     }
 
-    function verifyRoomCode() {
+    async function verifyRoomCode() {
       const inputCode = document.getElementById('modal-code-input').value;
-      socket.emit('join-room', { room: pendingRoom, code: inputCode });
-    }
+      const doc = await db.collection('rooms').doc(pendingRoom).get();
 
-    socket.on('room-error', (msg) => {
-      const errDiv = document.getElementById('room-error');
-      if (errDiv) errDiv.textContent = msg;
-      const modalErr = document.getElementById('modal-error');
-      if (modalErr) modalErr.textContent = msg;
-      const directErr = document.getElementById('direct-modal-error');
-      if (directErr) directErr.textContent = msg;
-    });
-
-    socket.on('room-joined', ({ room, code }) => {
-      closeModal();
-      closeDirectModal();
-      currentRoom = room;
-      document.getElementById('room-screen').classList.add('hidden');
-      document.getElementById('chat-screen').classList.remove('hidden');
-      document.getElementById('active-room-title').textContent = `ROOM: ${currentRoom.toUpperCase()}`;
-      
-      const secretDisplay = document.getElementById('active-room-secret');
-      if (code) {
-        secretDisplay.textContent = `[PRIVATE ACCESS CODE: ${code}]`;
+      if (doc.exists && doc.data().code === inputCode) {
+        closeModal();
+        enterRoom(pendingRoom, doc.data().code);
       } else {
-        secretDisplay.textContent = '[PUBLIC PROTOCOL - NO CODE REQUIRED]';
+        document.getElementById('modal-error').textContent = '[ACCESS DENIED] INVALID CODE.';
       }
-    });
+    }
 
     function closeModal() {
       document.getElementById('code-modal').classList.add('hidden');
@@ -466,54 +485,85 @@
       document.getElementById('direct-code-modal').classList.add('hidden');
     }
 
-    function joinRoomByCode() {
+    async function joinRoomByCode() {
       const rName = document.getElementById('direct-room-name-input').value.trim();
       const rCode = document.getElementById('direct-room-code-input').value;
       const errDiv = document.getElementById('direct-modal-error');
       errDiv.textContent = '';
 
-      if (!rName) {
-        errDiv.textContent = '[ERROR] ENTER ROOM NAME.';
+      const doc = await db.collection('rooms').doc(rName).get();
+      if (!doc.exists) {
+        errDiv.textContent = '[ERROR] ROOM DOES NOT EXIST.';
         return;
       }
 
-      pendingRoom = rName;
-      socket.emit('join-room', { room: rName, code: rCode });
+      if (doc.data().code !== rCode) {
+        errDiv.textContent = '[ACCESS DENIED] INVALID CODE.';
+        return;
+      }
+
+      closeDirectModal();
+      enterRoom(rName, rCode);
+    }
+
+    function enterRoom(roomName, code) {
+      currentRoom = roomName;
+      document.getElementById('room-screen').classList.add('hidden');
+      document.getElementById('chat-screen').classList.remove('hidden');
+      document.getElementById('active-room-title').textContent = `ROOM: ${currentRoom.toUpperCase()}`;
+      
+      const secretDisplay = document.getElementById('active-room-secret');
+      if (code) {
+        secretDisplay.textContent = `[PRIVATE ACCESS CODE: ${code}]`;
+      } else {
+        secretDisplay.textContent = '[PUBLIC PROTOCOL - NO CODE REQUIRED]';
+      }
+
+      listenToMessages();
     }
 
     function leaveRoom() {
+      if (unsubscribeMessages) unsubscribeMessages();
       document.getElementById('chat-screen').classList.add('hidden');
       document.getElementById('room-screen').classList.remove('hidden');
-      socket.emit('get-rooms');
+      loadRoomsDropdown();
     }
 
-    function sendMessage(e) {
+    async function sendMessage(e) {
       e.preventDefault();
       const input = document.getElementById('msg-input');
       const text = input.value.trim();
       if (!text) return;
 
-      socket.emit('chat-message', { room: currentRoom, username: currentUser, text });
+      await db.collection('rooms').doc(currentRoom).collection('messages').add({
+        user: currentUser,
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
       input.value = '';
     }
 
-    socket.on('load-history', (history) => {
+    function listenToMessages() {
       const container = document.getElementById('messages-container');
       container.innerHTML = '';
-      history.forEach(addMsg);
-    });
 
-    socket.on('message', (msg) => {
-      addMsg(msg);
-    });
+      if (unsubscribeMessages) unsubscribeMessages();
 
-    function addMsg(m) {
-      const container = document.getElementById('messages-container');
-      const div = document.createElement('div');
-      div.className = 'msg-bubble' + (m.user === currentUser ? ' mine' : '');
-      div.innerHTML = `<small>${m.user}</small>${m.text}`;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+      unsubscribeMessages = db.collection('rooms').doc(currentRoom)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snapshot => {
+          container.innerHTML = '';
+          snapshot.forEach(doc => {
+            const m = doc.data();
+            const div = document.createElement('div');
+            div.className = 'msg-bubble' + (m.user === currentUser ? ' mine' : '');
+            div.innerHTML = `<small>${m.user}</small>${m.text}`;
+            container.appendChild(div);
+          });
+          container.scrollTop = container.scrollHeight;
+        });
     }
   </script>
 </body>

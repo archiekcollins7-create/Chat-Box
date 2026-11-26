@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBER_CHAT // LIVE_TERMINAL</title>
+  <title>CYBER_CHAT // SECURE_TERMINAL</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
     
@@ -225,9 +225,9 @@
 
   <div class="cyber-shell">
     <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v4.0_LIVE</span>
+      <span>SYS_ID: SECURE_CHAT_v4.1_LIVE</span>
       <div class="header-right">
-        <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
+        <span id="status-user" style="color: #00ffff;">STATUS: CONNECTING...</span>
         <button id="logout-btn" class="btn-alt hidden" onclick="logoutUser()">LOGOUT</button>
       </div>
     </div>
@@ -310,7 +310,14 @@
     let currentUser = '';
     let currentRoom = '';
     let pendingRoom = '';
-    let allRoomsData = {};
+
+    socket.on('connect', () => {
+      document.getElementById('status-user').textContent = currentUser ? `USER: ${currentUser.toUpperCase()}` : 'STATUS: ONLINE';
+    });
+
+    socket.on('disconnect', () => {
+      document.getElementById('status-user').textContent = 'STATUS: OFFLINE (RECONNECTING...)';
+    });
 
     // Check page load for saved user session
     window.addEventListener('DOMContentLoaded', () => {
@@ -322,6 +329,8 @@
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('room-screen').classList.remove('hidden');
         socket.emit('get-rooms');
+      } else {
+        document.getElementById('status-user').textContent = 'STATUS: OFFLINE';
       }
     });
 
@@ -366,7 +375,6 @@
     }
 
     socket.on('update-rooms', (rooms) => {
-      allRoomsData = rooms;
       const select = document.getElementById('room-select');
       select.innerHTML = '';
       
@@ -419,7 +427,7 @@
 
     socket.on('room-error', (msg) => {
       const errDiv = document.getElementById('room-error');
-      errDiv.textContent = msg;
+      if (errDiv) errDiv.textContent = msg;
       const modalErr = document.getElementById('modal-error');
       if (modalErr) modalErr.textContent = msg;
       const directErr = document.getElementById('direct-modal-error');
@@ -461,6 +469,14 @@
     function joinRoomByCode() {
       const rName = document.getElementById('direct-room-name-input').value.trim();
       const rCode = document.getElementById('direct-room-code-input').value;
+      const errDiv = document.getElementById('direct-modal-error');
+      errDiv.textContent = '';
+
+      if (!rName) {
+        errDiv.textContent = '[ERROR] ENTER ROOM NAME.';
+        return;
+      }
+
       pendingRoom = rName;
       socket.emit('join-room', { room: rName, code: rCode });
     }

@@ -225,7 +225,7 @@
 
   <div class="cyber-shell">
     <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v3.0</span>
+      <span>SYS_ID: SECURE_CHAT_v3.1</span>
       <div class="header-right">
         <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
         <button id="logout-btn" class="btn-alt hidden" onclick="logoutUser()">LOGOUT</button>
@@ -262,7 +262,10 @@
     <!-- 3. FULL CHAT SCREEN -->
     <div class="screen hidden" id="chat-screen">
       <div class="chat-topbar">
-        <span id="active-room-title" style="font-size: 1.1rem; letter-spacing: 1px;">ROOM: GENERAL</span>
+        <div>
+          <span id="active-room-title" style="font-size: 1.1rem; letter-spacing: 1px;">ROOM: GENERAL</span>
+          <span id="active-room-secret" style="display: block; font-size: 0.8rem; color: #00ffff; margin-top: 4px;"></span>
+        </div>
         <button class="btn-alt" onclick="leaveRoom()">DISCONNECT</button>
       </div>
       <div id="messages-container"></div>
@@ -476,6 +479,18 @@
       document.getElementById('room-screen').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
       document.getElementById('active-room-title').textContent = `ROOM: ${currentRoom.toUpperCase()}`;
+      
+      // Display secret room code ONLY to the creator/user inside the chat top bar if it has a code
+      const rooms = getRooms();
+      const secretCode = rooms[currentRoom] ? rooms[currentRoom].code : '';
+      const secretDisplay = document.getElementById('active-room-secret');
+      
+      if (secretCode) {
+        secretDisplay.textContent = `[PRIVATE ACCESS CODE: ${secretCode}]`;
+      } else {
+        secretDisplay.textContent = '[PUBLIC PROTOCOL - NO CODE REQUIRED]';
+      }
+
       renderMessages();
     }
 

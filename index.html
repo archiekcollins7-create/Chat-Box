@@ -1,570 +1,2112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBER_CHAT // CLOUD_TERMINAL</title>
-  
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CyberChat // Retro-Futuristic Terminal</title>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-    
-    body {
-      background-color: #030305;
-      color: #00ff66;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      background-image: 
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
-        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04));
-      background-size: 100% 4px, 6px 100%;
-    }
+        :root {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --secondary: #a855f7;
+            --secondary-glow: rgba(168, 85, 247, 0.4);
+            --bg-base: #02040a;
+            --bg-panel: #040814;
+            --bg-card: #080e1c;
+            --bg-input: #0c1426;
+            --text-main: #f3f4f6;
+            --text-accent: #60a5fa;
+            --accent-glow: #3b82f6;
+        }
 
-    .cyber-shell {
-      width: 96vw;
-      height: 94vh;
-      background: rgba(8, 12, 10, 0.98);
-      border: 2px solid #00ff66;
-      box-shadow: 0 0 30px rgba(0, 255, 102, 0.25);
-      display: flex;
-      flex-direction: column;
-      padding: 25px;
-    }
+        body.theme-matrix {
+            --primary: #00ffcc;
+            --primary-glow: rgba(0, 255, 204, 0.5);
+            --secondary: #22c55e;
+            --secondary-glow: rgba(34, 197, 94, 0.4);
+            --bg-base: #020804;
+            --bg-panel: #040c06;
+            --bg-card: #07150a;
+            --bg-input: #0a1f0e;
+            --text-main: #e2fef0;
+            --text-accent: #4ade80;
+            --accent-glow: #00ffcc;
+        }
 
-    .shell-header {
-      border-bottom: 2px dashed #00ff66;
-      padding-bottom: 12px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.2rem;
-      letter-spacing: 2px;
-    }
+        body.theme-cyber {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --secondary: #a855f7;
+            --secondary-glow: rgba(168, 85, 247, 0.4);
+            --bg-base: #02040a;
+            --bg-panel: #040814;
+            --bg-card: #080e1c;
+            --bg-input: #0c1426;
+            --text-main: #f3f4f6;
+            --text-accent: #60a5fa;
+            --accent-glow: #3b82f6;
+        }
 
-    .header-right {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
+        body.theme-synthwave {
+            --primary: #ec4899;
+            --primary-glow: rgba(236, 72, 153, 0.5);
+            --secondary: #f43f5e;
+            --secondary-glow: rgba(244, 63, 94, 0.4);
+            --bg-base: #090206;
+            --bg-panel: #11030d;
+            --bg-card: #1c0515;
+            --bg-input: #29081e;
+            --text-main: #fdf2f8;
+            --text-accent: #f472b6;
+            --accent-glow: #ec4899;
+        }
 
-    .header-right button {
-      width: auto;
-      padding: 6px 14px;
-      margin-top: 0;
-      font-size: 0.8rem;
-    }
+        body.theme-acid {
+            --primary: #eab308;
+            --primary-glow: rgba(234, 179, 8, 0.5);
+            --secondary: #f97316;
+            --secondary-glow: rgba(249, 115, 22, 0.4);
+            --bg-base: #080502;
+            --bg-panel: #0f0903;
+            --bg-card: #1c1005;
+            --bg-input: #291807;
+            --text-main: #fefce8;
+            --text-accent: #fbbf24;
+            --accent-glow: #eab308;
+        }
 
-    .screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      max-width: 650px;
-      margin: auto;
-      width: 100%;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    .hidden { display: none !important; }
+        body {
+            background: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            transition: background 0.3s ease;
+        }
 
-    h2, h3 {
-      margin-bottom: 20px;
-      color: #00ff66;
-      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 1.6rem;
-      text-align: center;
-    }
+        body.crt-enabled::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 999;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
 
-    input, select, button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 15px;
-      background: #000;
-      border: 1px solid #00ff66;
-      color: #00ff66;
-      font-size: 1.1rem;
-      outline: none;
-      border-radius: 0;
-    }
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
 
-    input:focus, select:focus {
-      box-shadow: 0 0 12px rgba(0, 255, 102, 0.6);
-    }
+        #app-container {
+            width: 95vw;
+            max-width: 1150px;
+            height: 88vh;
+            height: 88dvh;
+            background: var(--bg-panel);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            z-index: 10;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 25px var(--primary), inset 0 0 25px var(--secondary-glow), 0 0 50px var(--secondary-glow);
+            position: relative;
+            transition: all 0.3s ease;
+        }
 
-    button {
-      background: #00ff66;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      transition: 0.2s;
-    }
+        #auth-overlay, #invite-popup-overlay, #confirm-switch-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-base);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 16px;
+        }
 
-    button:hover {
-      background: #00cc52;
-      box-shadow: 0 0 20px #00ff66;
-    }
+        #invite-popup-overlay, #confirm-switch-overlay {
+            display: none;
+            z-index: 300;
+        }
 
-    .btn-alt {
-      background: transparent;
-      color: #00ff66;
-    }
+        .auth-card, .popup-card {
+            background: var(--bg-card);
+            padding: 28px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            max-width: 360px;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 0 25px var(--secondary), inset 0 0 15px var(--primary-glow);
+            text-align: center;
+        }
 
-    .btn-alt:hover {
-      background: rgba(0, 255, 102, 0.15);
-      color: #00ff66;
-      box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
-    }
+        .auth-card h2, .popup-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--secondary);
+        }
 
-    #error-msg {
-      color: #ff3333;
-      text-shadow: 0 0 6px rgba(255, 51, 51, 0.6);
-      margin-top: 15px;
-      font-size: 1rem;
-      text-align: center;
-    }
+        .auth-card p, .popup-card p {
+            font-size: 12px;
+            color: var(--secondary);
+        }
 
-    /* Full Screen Chat Layout */
-    #chat-screen {
-      max-width: 100%;
-      height: 100%;
-      justify-content: flex-start;
-    }
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
 
-    .chat-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #051a0c;
-      padding: 12px 20px;
-      border: 1px solid #00ff66;
-      margin-bottom: 15px;
-    }
+        #sidebar {
+            width: 280px;
+            background: var(--bg-panel);
+            border-right: 2px solid var(--primary);
+            box-shadow: 4px 0 15px var(--primary-glow);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 16px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
 
-    .chat-topbar button {
-      width: auto;
-      padding: 8px 16px;
-      margin-top: 0;
-      font-size: 0.9rem;
-    }
+        .sidebar-close-btn {
+            display: none;
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            font-size: 22px;
+            color: var(--secondary);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--secondary-glow);
+            border: 1px solid var(--secondary);
+        }
 
-    #messages-container {
-      flex: 1;
-      background: #020803;
-      border: 1px solid #003311;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        .user-profile-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--primary-glow);
+        }
 
-    .msg-bubble {
-      background: #0d2614;
-      border-left: 4px solid #00ff66;
-      padding: 12px 16px;
-      max-width: 70%;
-      word-break: break-word;
-      font-size: 1.05rem;
-    }
+        .user-profile-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-    .msg-bubble.mine {
-      background: #14331e;
-      border-left-color: #00ffff;
-      align-self: flex-end;
-    }
+        .user-profile-box label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            text-transform: uppercase;
+            text-shadow: 0 0 6px var(--primary);
+        }
 
-    .msg-bubble small {
-      display: block;
-      font-size: 0.75rem;
-      opacity: 0.6;
-      margin-bottom: 4px;
-    }
+        .user-profile-box span.disp-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 8px var(--secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .send-box {
-      display: flex;
-      gap: 15px;
-      margin-top: 15px;
-    }
+        .user-profile-box span.usr-handle {
+            font-size: 11px;
+            color: var(--text-accent);
+        }
 
-    .send-box input {
-      margin-top: 0;
-    }
+        .status-badge-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 11px;
+            color: var(--text-accent);
+            cursor: pointer;
+        }
 
-    .send-box button {
-      width: 160px;
-      margin-top: 0;
-    }
+        .room-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--primary-glow);
+        }
 
-    /* Modal Overlays */
-    .cyber-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.85);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-    .modal-box {
-      background: #080d0a;
-      border: 2px solid #00ff66;
-      padding: 30px;
-      width: 450px;
-      box-shadow: 0 0 25px rgba(0,255,102,0.4);
-    }
-  </style>
+        .sidebar-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-shadow: 0 0 8px var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-friend-box {
+            display: flex;
+            gap: 6px;
+        }
+
+        .add-friend-box input, .auth-card input {
+            padding: 10px 14px;
+            font-size: 12px;
+        }
+
+        #friends-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .friend-card {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-glow);
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4b5563;
+            box-shadow: 0 0 4px rgba(75, 85, 99, 0.5);
+            flex-shrink: 0;
+        }
+
+        .status-dot.online {
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+        }
+
+        .friend-details {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .friend-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .friend-handle {
+            font-size: 10px;
+            color: var(--text-accent);
+        }
+
+        .friend-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-invite-friend {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            color: var(--text-accent);
+            padding: 4px 8px;
+            font-size: 10px;
+            border-radius: 6px;
+        }
+
+        .remove-friend {
+            color: var(--secondary);
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.7;
+            padding: 4px;
+        }
+
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            width: 100%;
+            background: var(--bg-panel);
+        }
+
+        #tabs-bar {
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            padding: 6px 12px 0 12px;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+        }
+
+        #tabs-list {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .chat-tab {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-glow);
+            border-bottom: none;
+            padding: 6px 12px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-size: 12px;
+            color: var(--secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            max-width: 200px;
+        }
+
+        .chat-tab.active {
+            background: var(--bg-panel);
+            color: #fff;
+            border-color: var(--primary);
+            border-bottom: 1px solid var(--bg-panel);
+            font-weight: 600;
+            box-shadow: 0 -4px 15px var(--primary-glow);
+        }
+
+        .tab-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .edit-tab-btn {
+            font-size: 10px;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .tab-close-btn {
+            font-size: 12px;
+            color: var(--secondary);
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .add-tab-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            color: var(--text-accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+
+        #chat-header {
+            padding: 12px 18px;
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #room-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 12px var(--primary-glow);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inbox-btn, .menu-toggle-btn {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .menu-toggle-btn { display: none; }
+
+        .green-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 9px;
+            height: 9px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            border: 2px solid var(--bg-panel);
+            box-shadow: 0 0 8px var(--primary);
+            display: none;
+        }
+
+        .green-badge.active { display: block; }
+
+        .header-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-accent);
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .btn-leave-room {
+            background: var(--bg-card);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            box-shadow: 0 0 8px var(--secondary-glow);
+        }
+
+        .status {
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--bg-card);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 0 8px var(--secondary-glow);
+        }
+
+        .status.online {
+            background: var(--bg-card);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        #messages-view-port {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+            background: var(--bg-panel);
+        }
+
+        #whiteboard-view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            background: var(--bg-panel);
+            padding: 12px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        #wb-canvas {
+            flex: 1;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            cursor: crosshair;
+            box-shadow: inset 0 0 15px var(--primary-glow);
+            touch-action: none;
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wb-colors {
+            display: flex;
+            gap: 6px;
+        }
+
+        .wb-color-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+        }
+
+        .msg {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            padding: 10px 14px;
+            border-radius: 10px;
+            border-top-left-radius: 2px;
+            max-width: 80%;
+            width: fit-content;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text-main);
+            box-shadow: 0 0 12px var(--primary-glow);
+            position: relative;
+        }
+
+        .msg.self {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: 1px solid var(--text-accent);
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 10px;
+            border-top-right-radius: 2px;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .msg .sender-header {
+            font-size: 11px;
+            color: var(--text-accent);
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .msg.self .sender-header {
+            color: rgba(255, 255, 255, 0.9);
+            justify-content: flex-end;
+        }
+
+        .msg img {
+            max-width: 100%;
+            border-radius: 6px;
+            margin-top: 6px;
+            border: 1px solid var(--primary-glow);
+        }
+
+        .spoiler-hidden {
+            background: var(--bg-input);
+            color: transparent;
+            text-shadow: 0 0 8px var(--text-accent);
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0 6px;
+            user-select: none;
+        }
+
+        .spoiler-revealed {
+            background: var(--bg-card);
+            color: #fff;
+            padding: 0 6px;
+            border-radius: 4px;
+            border: 1px dashed var(--secondary);
+        }
+
+        .msg-reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .reaction-pill {
+            background: var(--bg-panel);
+            border: 1px solid var(--primary-glow);
+            border-radius: 12px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text-accent);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .add-reaction-btn {
+            background: transparent;
+            border: 1px dashed var(--primary-glow);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            color: var(--text-accent);
+            cursor: pointer;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 6px;
+            padding: 0;
+        }
+
+        .reaction-picker {
+            position: absolute;
+            bottom: -32px;
+            left: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 4px 6px;
+            display: none;
+            gap: 6px;
+            z-index: 50;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .reaction-picker.open { display: flex; }
+        .reaction-option { cursor: pointer; font-size: 14px; }
+
+        .user-eye {
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-eye.looking {
+            color: var(--primary);
+            filter: drop-shadow(0 0 6px var(--primary));
+        }
+
+        .user-eye.away {
+            color: #6b7280;
+            filter: grayscale(100%);
+            opacity: 0.5;
+        }
+
+        #typing-indicator {
+            font-size: 11px;
+            color: var(--secondary);
+            padding: 2px 16px;
+            font-style: italic;
+            height: 18px;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 6px var(--secondary-glow);
+            background: var(--bg-panel);
+        }
+
+        /* Image Preview Container Styles */
+        #image-preview-container {
+            display: none;
+            padding: 8px 16px 0 16px;
+            background: var(--bg-panel);
+            border-top: 2px solid var(--primary);
+            align-items: center;
+            gap: 10px;
+        }
+        #image-preview-container.active {
+            display: flex;
+        }
+        .preview-thumb-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--bg-card);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        .preview-thumb-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        #input-area {
+            padding: 12px 16px;
+            background: var(--bg-panel);
+            display: flex;
+            gap: 8px;
+            border-top: 2px solid var(--primary);
+            align-items: center;
+        }
+
+        input[type="text"], input[type="password"] {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: var(--bg-input);
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+            box-shadow: inset 0 0 8px var(--primary-glow);
+        }
+
+        button {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: 1px solid var(--text-accent);
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #ffffff;
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            color: var(--text-accent);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .tool-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--secondary-glow);
+        }
+        .tool-btn.active-tool {
+            background: var(--secondary);
+            color: #fff;
+            box-shadow: 0 0 12px var(--secondary);
+        }
+
+        #inbox-modal {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 12px;
+            width: calc(100% - 24px);
+            max-width: 320px;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 0 25px var(--primary), inset 0 0 15px var(--secondary-glow);
+            padding: 14px;
+            z-index: 100;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .inbox-tabs {
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid var(--primary-glow);
+            padding-bottom: 6px;
+        }
+
+        .inbox-tab {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-accent);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .inbox-tab.active {
+            color: #ffffff;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            font-weight: 700;
+        }
+
+        .req-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--primary-glow);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .req-actions { display: flex; gap: 4px; }
+        .req-actions button { padding: 4px 8px; font-size: 10px; border-radius: 6px; }
+        .btn-accept { background: var(--primary); color: var(--bg-base); border: none; font-weight: 700; }
+        .btn-decline { background: var(--bg-card); color: var(--secondary); border: 1px solid var(--secondary); }
+
+        .deck-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--primary-glow);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-accent);
+        }
+
+        .setting-row select, .setting-row input[type="range"] {
+            background: var(--bg-input);
+            color: #fff;
+            border: 1px solid var(--primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            #app-container { 
+                width: 100vw; 
+                height: 100vh; 
+                height: 100dvh; 
+                border-radius: 0; 
+                border: none;
+                flex-direction: column;
+            }
+            .menu-toggle-btn { display: flex; }
+            .sidebar-close-btn { display: block; }
+            #sidebar { 
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 90;
+                background: var(--bg-panel);
+                transform: translateX(-100%);
+                padding-top: 50px;
+            }
+            #sidebar.open { transform: translateX(0); }
+            .status { display: none; }
+            #chat-header { height: 50px; }
+        }
+    </style>
 </head>
-<body>
+<body class="theme-cyber crt-enabled">
 
-  <div class="cyber-shell">
-    <div class="shell-header">
-      <span>SYS_ID: SECURE_CHAT_v6.0_CLOUD</span>
-      <div class="header-right">
-        <span id="status-user" style="color: #00ffff;">STATUS: OFFLINE</span>
-        <button id="logout-btn" class="btn-alt hidden" onclick="logoutUser()">LOGOUT</button>
-      </div>
-    </div>
+    <canvas id="bg-canvas"></canvas>
 
-    <!-- 1. AUTH SCREEN -->
-    <div class="screen" id="auth-screen">
-      <h2>AUTHENTICATION REQUIRED</h2>
-      <input type="text" id="username" placeholder="ENTER USERNAME" autocomplete="off">
-      <input type="password" id="password" placeholder="ENTER PASSWORD">
-      <button onclick="handleAuth('login')">ACCESS TERMINAL</button>
-      <button class="btn-alt" onclick="handleAuth('register')">REGISTER NEW USER</button>
-      <div id="error-msg"></div>
-    </div>
-
-    <!-- 2. ROOM SCREEN -->
-    <div class="screen hidden" id="room-screen">
-      <h2>SELECT PROTOCOL ROOM</h2>
-      <select id="room-select">
-        <option value="General" data-code="">General (Public)</option>
-      </select>
-      <button onclick="tryEnterRoom()">CONNECT TO SELECTED ROOM</button>
-      <button class="btn-alt" onclick="openJoinCodeModal()">[+] JOIN ROOM VIA CODE</button>
-      
-      <hr style="border:0; border-top:1px dashed #00ff66; margin:25px 0; width:100%;">
-      
-      <h3 style="font-size: 1.1rem;">CREATE SECURE ROOM</h3>
-      <input type="text" id="new-room-name" placeholder="NEW ROOM NAME" autocomplete="off">
-      <input type="password" id="new-room-code" placeholder="SET NUMERIC ACCESS CODE (OPTIONAL)">
-      <button class="btn-alt" onclick="createRoom()">INITIALIZE & JOIN ROOM</button>
-      <div id="room-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px; text-align: center;"></div>
-    </div>
-
-    <!-- 3. CHAT SCREEN -->
-    <div class="screen hidden" id="chat-screen">
-      <div class="chat-topbar">
-        <div>
-          <span id="active-room-title" style="font-size: 1.1rem; letter-spacing: 1px;">ROOM: GENERAL</span>
-          <span id="active-room-secret" style="display: block; font-size: 0.8rem; color: #00ffff; margin-top: 4px;"></span>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>CYBERNET LOGIN</h2>
+            <p id="auth-subtext">Enter your link credentials. Use exact password for multi-device sync!</p>
+            <input type="text" id="auth-displayname" placeholder="Display Name (e.g. Neo)" maxlength="15" autocomplete="off">
+            <input type="text" id="auth-username" placeholder="@USER (e.g. glitch_99)" maxlength="15" autocapitalize="none" autocomplete="off">
+            <input type="password" id="auth-pass" placeholder="Secure Password" maxlength="20">
+            <button type="button" id="auth-btn" onclick="handleAuth()">Initialize Connection</button>
         </div>
-        <button class="btn-alt" onclick="leaveRoom()">DISCONNECT</button>
-      </div>
-      <div id="messages-container"></div>
-      <form class="send-box" onsubmit="sendMessage(event)">
-        <input type="text" id="msg-input" placeholder="TYPE TRANSMISSION..." autocomplete="off" required>
-        <button type="submit">TRANSMIT</button>
-      </form>
     </div>
 
-  </div>
-
-  <!-- PASSWORD ENTRY MODAL -->
-  <div id="code-modal" class="cyber-modal hidden">
-    <div class="modal-box">
-      <h3>SECURE ROOM ACCESS</h3>
-      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">This room requires a security code.</p>
-      <input type="password" id="modal-code-input" placeholder="ENTER ACCESS CODE">
-      <button onclick="verifyRoomCode()" style="margin-top: 20px;">AUTHENTICATE</button>
-      <button class="btn-alt" onclick="closeModal()" style="margin-top: 10px;">CANCEL</button>
-      <div id="modal-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px;"></div>
+    <div id="invite-popup-overlay">
+        <div class="popup-card">
+            <h2>ROOM INVITE</h2>
+            <p id="popup-invite-text">Your connection invited you to join a secure channel.</p>
+            <div class="popup-actions">
+                <button type="button" onclick="acceptRoomInvite()">Accept Link</button>
+                <button type="button" class="btn-secondary" onclick="declineRoomInvite()">Decline</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- DIRECT JOIN VIA CODE MODAL -->
-  <div id="direct-code-modal" class="cyber-modal hidden">
-    <div class="modal-box">
-      <h3>JOIN ROOM BY CODE</h3>
-      <p style="font-size: 0.9rem; margin-bottom: 15px; color: #aaffcc;">Enter the exact room name and code.</p>
-      <input type="text" id="direct-room-name-input" placeholder="EXACT ROOM NAME" autocomplete="off">
-      <input type="password" id="direct-room-code-input" placeholder="ROOM NUMBER CODE" style="margin-top: 10px;">
-      <button onclick="joinRoomByCode()" style="margin-top: 20px;">CONNECT</button>
-      <button class="btn-alt" onclick="closeDirectModal()" style="margin-top: 10px;">CANCEL</button>
-      <div id="direct-modal-error" style="color: #ff3333; font-size: 0.9rem; margin-top: 10px;"></div>
+    <div id="confirm-switch-overlay">
+        <div class="popup-card">
+            <h2>SWITCH ACCOUNT</h2>
+            <p>Are you sure you want to switch accounts?</p>
+            <div class="popup-actions">
+                <button type="button" onclick="confirmSwitchAccount()">Yes, Switch</button>
+                <button type="button" class="btn-secondary" onclick="cancelSwitchAccount()">Cancel</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // ==========================================
-    // PASTE YOUR FIREBASE CONFIGURATION HERE:
-    // ==========================================
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+    <div id="app-container">
+        <div id="sidebar">
+            <span class="sidebar-close-btn" onclick="toggleSidebar()" title="Close Menu">&times;</span>
+            <div class="user-profile-box">
+                <div class="user-profile-info">
+                    <label>Terminal User</label>
+                    <span id="display-user" class="disp-name">--</span>
+                    <span id="display-handle" class="usr-handle">--</span>
+                </div>
+                <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:10px;" onclick="promptSwitchAccount()">Switch</button>
+            </div>
+            <div class="status-badge-container" onclick="promptCustomStatus()" title="Set Status Mood">
+                <span>🟢</span>
+                <span id="user-status-mood" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">⚡ Jacked In</span>
+            </div>
+            <div class="room-actions">
+                <button type="button" onclick="promptJoinRoom()">// Create / Join Channel</button>
+            </div>
+            <div class="sidebar-title">
+                <span>Linked Contacts</span>
+            </div>
+            <div class="add-friend-box">
+                <input type="text" id="friend-input" placeholder="@USER" autocapitalize="none" autocomplete="off">
+                <button type="button" class="btn-secondary" onclick="sendFriendRequest()">Link</button>
+            </div>
+            <div id="friends-list"></div>
+            <div class="deck-menu">
+                <div class="sidebar-title"><span>Cyber Settings</span></div>
+                <div class="setting-row">
+                    <span>Theme Palette</span>
+                    <select id="theme-select" onchange="changeTheme(this.value)">
+                        <option value="cyber" selected>Cyber Blue</option>
+                        <option value="matrix">Matrix Green</option>
+                        <option value="synthwave">Synthwave Pink</option>
+                        <option value="acid">Acid Yellow</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span>Background Wallpaper</span>
+                    <select id="wallpaper-select" onchange="changeWallpaper(this.value)">
+                        <option value="rain">Electrified Rain</option>
+                        <option value="grid">Wireframe Horizon</option>
+                        <option value="minimal">Minimal Dark</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span>Rain Speed / Density</span>
+                    <input type="range" id="rain-range" min="10" max="100" value="55" oninput="updateRainSettings(this.value)">
+                </div>
+                <div class="setting-row">
+                    <span>CRT Monitor Overlay</span>
+                    <input type="checkbox" id="crt-toggle" checked onchange="toggleCRT(this.checked)">
+                </div>
+                <div class="setting-row">
+                    <span>Synth Audio Ambience</span>
+                    <input type="checkbox" id="audio-toggle" checked onchange="toggleAudioAmbience(this.checked)">
+                </div>
+            </div>
+        </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        <div id="chat-container">
+            <div id="tabs-bar">
+                <div id="tabs-list"></div>
+                <div class="chat-tab" onclick="openWhiteboardTab()" id="tab-whiteboard" style="color:var(--primary);">
+                    <span class="tab-title">🎨 Whiteboard</span>
+                </div>
+                <div class="add-tab-btn" onclick="promptJoinRoom()" title="Open New Channel">+</div>
+            </div>
 
-    let currentUser = '';
-    let currentRoom = '';
-    let pendingRoom = '';
-    let unsubscribeMessages = null;
+            <div id="chat-header">
+                <button type="button" class="menu-toggle-btn" onclick="toggleSidebar()" title="Toggle Menu">⚡</button>
+                <span id="room-display">Channel: Offline</span>
+                <div class="header-actions">
+                    <button type="button" class="inbox-btn" onclick="toggleInbox()" title="Inbox / Notifications">
+                        📬 <span id="mail-badge" class="green-badge"></span>
+                    </button>
+                    <button type="button" class="header-btn btn-leave-room" onclick="leaveCurrentRoom()">Disconnect</button>
+                    <button type="button" class="header-btn" onclick="inviteFriend()">Share Link</button>
+                    <span id="status-badge" class="status">Offline</span>
+                </div>
+            </div>
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = localStorage.getItem('cyber_logged_in_user');
-      if (savedUser) {
-        currentUser = savedUser;
-        document.getElementById('status-user').textContent = `USER: ${currentUser.toUpperCase()}`;
-        document.getElementById('logout-btn').classList.remove('hidden');
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('room-screen').classList.remove('hidden');
-        loadRoomsDropdown();
-      }
-    });
+            <div id="messages-view-port">
+                <div id="messages"></div>
+                <div id="whiteboard-view">
+                    <canvas id="wb-canvas"></canvas>
+                    <div class="wb-tools">
+                        <div class="wb-colors">
+                            <div class="wb-color-dot" style="background:#ef4444;" onclick="setWbColor('#ef4444')" title="Fire Red"></div>
+                            <div class="wb-color-dot" style="background:#f97316;" onclick="setWbColor('#f97316')" title="Fire Orange"></div>
+                            <div class="wb-color-dot" style="background:#eab308;" onclick="setWbColor('#eab308')" title="Fire Yellow"></div>
+                            <div class="wb-color-dot" style="background:#3b82f6;" onclick="setWbColor('#3b82f6')"></div>
+                            <div class="wb-color-dot" style="background:#ffffff;" onclick="setWbColor('#ffffff')"></div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <input type="file" id="image-upload-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+                            <button type="button" class="btn-secondary" onclick="triggerImageUpload()">Upload Picture</button>
+                            <button type="button" class="btn-secondary" onclick="sendDrawingToChat()">Send Drawing To Chat</button>
+                            <button type="button" class="btn-secondary" onclick="clearWhiteboard()">Wipe Grid</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    async function handleAuth(action) {
-      const user = document.getElementById('username').value.trim();
-      const pass = document.getElementById('password').value;
-      const err = document.getElementById('error-msg');
-      err.textContent = '';
+            <div id="typing-indicator"></div>
+            
+            <div id="image-preview-container">
+                <div class="preview-thumb-wrapper">
+                    <img id="preview-thumb-img" src="" alt="Preview">
+                    <span class="preview-remove-btn" onclick="clearPastedImage()" title="Remove Image">&times;</span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-accent); font-family: 'Orbitron', sans-serif;">Image attached, ready to transmit...</span>
+            </div>
 
-      if (!user || !pass) {
-        err.textContent = '[ERROR] ALL FIELDS REQUIRED.';
-        return;
-      }
+            <div id="input-area">
+                <button type="button" class="tool-btn" onclick="toggleGlitchText()" title="Glitch Text Converter">⚡Glitch</button>
+                <button type="button" class="tool-btn" onclick="toggleSpoilerInput()" id="spoiler-btn" title="Secret Spoiler Cipher">🔒Spoiler</button>
+                <button type="button" class="tool-btn" onclick="toggleVoiceRecorder()" id="mic-btn" title="Record Voice Synth">🎙️Mic</button>
+                <input type="text" id="message-input" placeholder="Transmit message or command (e.g. /roll 1d20)..." autocomplete="off" oninput="handleTypingInput(); handleKeyStrokeSound();" onkeypress="if(event.key==='Enter') send()">
+                <button type="button" onclick="send()">Send</button>
+            </div>
+        </div>
 
-      const userRef = db.collection('users').doc(user);
-      const doc = await userRef.get();
+        <div id="inbox-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-family:'Orbitron',sans-serif; font-size:12px; color:var(--text-accent);">Incoming Signals</h3>
+                <span style="cursor:pointer; font-weight:bold; color:var(--secondary);" onclick="toggleInbox()">&times;</span>
+            </div>
+            <div class="inbox-tabs">
+                <div id="tab-requests" class="inbox-tab active" onclick="switchInboxTab('requests')">Link Requests</div>
+                <div id="tab-system" class="inbox-tab" onclick="switchInboxTab('system')">System Logs</div>
+            </div>
+            <div id="inbox-content" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
 
-      if (action === 'register') {
-        if (doc.exists) {
-          err.textContent = '[ERROR] USERNAME ALREADY EXISTS.';
-          return;
-        }
-        await userRef.set({ password: pass });
-        alert('[SUCCESS] USER REGISTERED. YOU MAY NOW LOGIN.');
-      } else {
-        if (!doc.exists || doc.data().password !== pass) {
-          err.textContent = '[ERROR] ACCESS DENIED: INVALID CREDENTIALS.';
-          return;
-        }
-        currentUser = user;
-        localStorage.setItem('cyber_logged_in_user', currentUser);
-        
-        document.getElementById('status-user').textContent = `USER: ${currentUser.toUpperCase()}`;
-        document.getElementById('logout-btn').classList.remove('hidden');
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('room-screen').classList.remove('hidden');
-        loadRoomsDropdown();
-      }
-    }
+    <script>
+        let pubnub = null;
+        let authPubNub = null;
+        let myName = "";
+        let myUsername = "";
+        let userChannel = "";
+        let activeRoomCode = "";
+        let pendingInviteRoomCode = "";
+        let openRooms = [];
+        let roomAliases = {};
+        let roomMessages = {};
+        let userFocusStates = {};
+        let userMoods = {};
+        let friends = [];
+        let incomingRequests = [];
+        let systemMessages = [];
+        let activeUsers = new Set();
+        let currentTab = 'requests';
+        let isUserLooking = true;
+        let typingTimeout = null;
+        let isCurrentlyTyping = false;
+        let activeTypers = {};
+        let isAudioAmbienceEnabled = true;
+        let isGlitchModeActive = false;
+        let isSpoilerModeActive = false;
+        let customMood = "⚡ Jacked In";
+        let wallpaperMode = "rain";
+        let rainDensity = 55;
+        let isWhiteboardActive = false;
+        let pastedImageFile = null;
 
-    function logoutUser() {
-      localStorage.removeItem('cyber_logged_in_user');
-      currentUser = '';
-      if (unsubscribeMessages) unsubscribeMessages();
-      document.getElementById('status-user').textContent = 'STATUS: OFFLINE';
-      document.getElementById('logout-btn').classList.add('hidden');
-      document.getElementById('chat-screen').classList.add('hidden');
-      document.getElementById('room-screen').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-    }
+        const myId = "usr_" + Math.random().toString(36).substr(2, 9);
+        const GLOBAL_REGISTRY_CHANNEL = "global_user_registry_sync";
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let ambientOsc = null;
+        let ambientGain = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecordingAudio = false;
 
-    async function loadRoomsDropdown() {
-      const select = document.getElementById('room-select');
-      const snapshot = await db.collection('rooms').get();
-      select.innerHTML = '<option value="General" data-code="">General (Public)</option>';
-      
-      snapshot.forEach(doc => {
-        if (doc.id !== 'General') {
-          const data = doc.data();
-          const opt = document.createElement('option');
-          opt.value = doc.id;
-          opt.textContent = doc.id + (data.code ? ' [SECURE]' : '');
-          opt.dataset.protected = data.code ? 'true' : 'false';
-          select.appendChild(opt);
-        }
-      });
-    }
-
-    async function createRoom() {
-      const name = document.getElementById('new-room-name').value.trim();
-      const code = document.getElementById('new-room-code').value;
-      const errDiv = document.getElementById('room-error');
-      errDiv.textContent = '';
-
-      if (!name) {
-        errDiv.textContent = '[ERROR] ENTER A ROOM NAME.';
-        return;
-      }
-
-      const roomRef = db.collection('rooms').doc(name);
-      const doc = await roomRef.get();
-      if (doc.exists) {
-        errDiv.textContent = '[ERROR] ROOM ALREADY EXISTS.';
-        return;
-      }
-
-      await roomRef.set({ code: code });
-      document.getElementById('new-room-name').value = '';
-      document.getElementById('new-room-code').value = '';
-      await loadRoomsDropdown();
-
-      enterRoom(name, code);
-    }
-
-    async function tryEnterRoom() {
-      const select = document.getElementById('room-select');
-      const selectedOpt = select.options[select.selectedIndex];
-      if (!selectedOpt) return;
-
-      pendingRoom = selectedOpt.value;
-      const isProtected = selectedOpt.dataset.protected === 'true';
-
-      if (pendingRoom === 'General') {
-        enterRoom('General', '');
-        return;
-      }
-
-      if (isProtected) {
-        document.getElementById('modal-code-input').value = '';
-        document.getElementById('modal-error').textContent = '';
-        document.getElementById('code-modal').classList.remove('hidden');
-      } else {
-        const doc = await db.collection('rooms').doc(pendingRoom).get();
-        enterRoom(pendingRoom, doc.data().code);
-      }
-    }
-
-    async function verifyRoomCode() {
-      const inputCode = document.getElementById('modal-code-input').value;
-      const doc = await db.collection('rooms').doc(pendingRoom).get();
-
-      if (doc.exists && doc.data().code === inputCode) {
-        closeModal();
-        enterRoom(pendingRoom, doc.data().code);
-      } else {
-        document.getElementById('modal-error').textContent = '[ACCESS DENIED] INVALID CODE.';
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('code-modal').classList.add('hidden');
-      pendingRoom = '';
-    }
-
-    function openJoinCodeModal() {
-      document.getElementById('direct-room-name-input').value = '';
-      document.getElementById('direct-room-code-input').value = '';
-      document.getElementById('direct-modal-error').textContent = '';
-      document.getElementById('direct-code-modal').classList.remove('hidden');
-    }
-
-    function closeDirectModal() {
-      document.getElementById('direct-code-modal').classList.add('hidden');
-    }
-
-    async function joinRoomByCode() {
-      const rName = document.getElementById('direct-room-name-input').value.trim();
-      const rCode = document.getElementById('direct-room-code-input').value;
-      const errDiv = document.getElementById('direct-modal-error');
-      errDiv.textContent = '';
-
-      const doc = await db.collection('rooms').doc(rName).get();
-      if (!doc.exists) {
-        errDiv.textContent = '[ERROR] ROOM DOES NOT EXIST.';
-        return;
-      }
-
-      if (doc.data().code !== rCode) {
-        errDiv.textContent = '[ACCESS DENIED] INVALID CODE.';
-        return;
-      }
-
-      closeDirectModal();
-      enterRoom(rName, rCode);
-    }
-
-    function enterRoom(roomName, code) {
-      currentRoom = roomName;
-      document.getElementById('room-screen').classList.add('hidden');
-      document.getElementById('chat-screen').classList.remove('hidden');
-      document.getElementById('active-room-title').textContent = `ROOM: ${currentRoom.toUpperCase()}`;
-      
-      const secretDisplay = document.getElementById('active-room-secret');
-      if (code) {
-        secretDisplay.textContent = `[PRIVATE ACCESS CODE: ${code}]`;
-      } else {
-        secretDisplay.textContent = '[PUBLIC PROTOCOL - NO CODE REQUIRED]';
-      }
-
-      listenToMessages();
-    }
-
-    function leaveRoom() {
-      if (unsubscribeMessages) unsubscribeMessages();
-      document.getElementById('chat-screen').classList.add('hidden');
-      document.getElementById('room-screen').classList.remove('hidden');
-      loadRoomsDropdown();
-    }
-
-    async function sendMessage(e) {
-      e.preventDefault();
-      const input = document.getElementById('msg-input');
-      const text = input.value.trim();
-      if (!text) return;
-
-      await db.collection('rooms').doc(currentRoom).collection('messages').add({
-        user: currentUser,
-        text: text,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      input.value = '';
-    }
-
-    function listenToMessages() {
-      const container = document.getElementById('messages-container');
-      container.innerHTML = '';
-
-      if (unsubscribeMessages) unsubscribeMessages();
-
-      unsubscribeMessages = db.collection('rooms').doc(currentRoom)
-        .collection('messages')
-        .orderBy('timestamp', 'asc')
-        .onSnapshot(snapshot => {
-          container.innerHTML = '';
-          snapshot.forEach(doc => {
-            const m = doc.data();
-            const div = document.createElement('div');
-            div.className = 'msg-bubble' + (m.user === currentUser ? ' mine' : '');
-            div.innerHTML = `<small>${m.user}</small>${m.text}`;
-            container.appendChild(div);
-          });
-          container.scrollTop = container.scrollHeight;
+        // Global Paste Event Listener
+        window.addEventListener('paste', (event) => {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let index in items) {
+                let item = items[index];
+                if (item.kind === 'file' && item.type.startsWith('image/')) {
+                    pastedImageFile = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('preview-thumb-img').src = e.target.result;
+                        document.getElementById('image-preview-container').classList.add('active');
+                    };
+                    reader.readAsDataURL(pastedImageFile);
+                    break;
+                }
+            }
         });
-    }
-  </script>
+
+        function clearPastedImage() {
+            pastedImageFile = null;
+            document.getElementById('image-preview-container').classList.remove('active');
+            document.getElementById('preview-thumb-img').src = '';
+        }
+
+        function startAmbientHum() {
+            if (!audioCtx || ambientOsc || !isAudioAmbienceEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                ambientOsc = audioCtx.createOscillator();
+                ambientGain = audioCtx.createGain();
+                ambientOsc.type = 'sine';
+                ambientOsc.frequency.setValueAtTime(55, audioCtx.currentTime);
+                ambientGain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+                ambientOsc.connect(ambientGain);
+                ambientGain.connect(audioCtx.destination);
+                ambientOsc.start();
+            } catch (e) {}
+        }
+
+        function stopAmbientHum() {
+            if (ambientOsc) {
+                try {
+                    ambientOsc.stop();
+                    ambientOsc.disconnect();
+                } catch(e) {}
+                ambientOsc = null;
+                ambientGain = null;
+            }
+        }
+
+        function toggleAudioAmbience(enabled) {
+            isAudioAmbienceEnabled = enabled;
+            if (enabled) {
+                startAmbientHum();
+            } else {
+                stopAmbientHum();
+            }
+        }
+
+        function playSciFiSound(type) {
+            if (!audioCtx || !isAudioAmbienceEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'send') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'receive') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(440, now + 0.12);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'click') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                osc.start(now);
+                osc.stop(now + 0.04);
+            } else if (type === 'key') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150 + Math.random() * 100, now);
+                gain.gain.setValueAtTime(0.02, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                osc.start(now);
+                osc.stop(now + 0.03);
+            }
+        }
+
+        function handleKeyStrokeSound() {
+            playSciFiSound('key');
+        }
+
+        // Background Wallpaper Animation Canvas Setup
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let drops = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function initWallpaper() {
+            drops = [];
+            if (wallpaperMode === 'rain') {
+                const numDrops = Math.floor((canvas.width / 20) * (rainDensity / 50));
+                for (let i = 0; i < numDrops; i++) {
+                    drops.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        length: Math.random() * 20 + 10,
+                        speed: Math.random() * 4 + 2,
+                        opacity: Math.random() * 0.5 + 0.1
+                    });
+                }
+            } else if (wallpaperMode === 'grid') {
+                for (let i = 0; i < 20; i++) {
+                    drops.push({ y: i * 40, offset: Math.random() * 100 });
+                }
+            }
+        }
+        initWallpaper();
+
+        function animateWallpaper() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const style = getComputedStyle(document.body);
+            const primaryColor = style.getPropertyValue('--primary').trim() || '#3b82f6';
+
+            if (wallpaperMode === 'rain') {
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 1;
+                for (let drop of drops) {
+                    ctx.globalAlpha = drop.opacity;
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(drop.x, drop.y + drop.length);
+                    ctx.stroke();
+
+                    drop.y += drop.speed;
+                    if (drop.y > canvas.height) {
+                        drop.y = -drop.length;
+                        drop.x = Math.random() * canvas.width;
+                    }
+                }
+            } else if (wallpaperMode === 'grid') {
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 0.5;
+                ctx.globalAlpha = 0.15;
+                const horizon = canvas.height * 0.6;
+                ctx.beginPath();
+                ctx.moveTo(0, horizon);
+                ctx.lineTo(canvas.width, horizon);
+                ctx.stroke();
+
+                for (let x = 0; x < canvas.width; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2, horizon);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+            }
+            requestAnimationFrame(animateWallpaper);
+        }
+        animateWallpaper();
+
+        function changeTheme(themeName) {
+            document.body.className = `theme-${themeName} ${document.getElementById('crt-toggle').checked ? 'crt-enabled' : ''}`;
+            playSciFiSound('click');
+        }
+
+        function changeWallpaper(mode) {
+            wallpaperMode = mode;
+            initWallpaper();
+            playSciFiSound('click');
+        }
+
+        function updateRainSettings(val) {
+            rainDensity = val;
+            initWallpaper();
+        }
+
+        function toggleCRT(enabled) {
+            if (enabled) {
+                document.body.classList.add('crt-enabled');
+            } else {
+                document.body.classList.remove('crt-enabled');
+            }
+            playSciFiSound('click');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            playSciFiSound('click');
+        }
+
+        function toggleInbox() {
+            const modal = document.getElementById('inbox-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            document.getElementById('mail-badge').classList.remove('active');
+            playSciFiSound('click');
+            renderInboxContent();
+        }
+
+        function switchInboxTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-requests').classList.toggle('active', tab === 'requests');
+            document.getElementById('tab-system').classList.toggle('active', tab === 'system');
+            renderInboxContent();
+            playSciFiSound('click');
+        }
+
+        function renderInboxContent() {
+            const container = document.getElementById('inbox-content');
+            container.innerHTML = '';
+            if (currentTab === 'requests') {
+                if (incomingRequests.length === 0) {
+                    container.innerHTML = '<span style="font-size:11px; color:var(--text-accent); text-align:center; padding:10px;">No pending signals.</span>';
+                    return;
+                }
+                incomingRequests.forEach((req, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'req-card';
+                    card.innerHTML = `
+                        <div style="overflow:hidden;">
+                            <div style="font-weight:600; font-size:12px; color:#fff;">${escape(req.senderName)}</div>
+                            <div style="font-size:10px; color:var(--text-accent);">${escape(req.senderHandle)}</div>
+                        </div>
+                        <div class="req-actions">
+                            <button class="btn-accept" onclick="acceptFriendRequest(${idx})">Link</button>
+                            <button class="btn-decline" onclick="declineFriendRequest(${idx})">Deny</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                if (systemMessages.length === 0) {
+                    container.innerHTML = '<span style="font-size:11px; color:var(--text-accent); text-align:center; padding:10px;">No system logs.</span>';
+                    return;
+                }
+                systemMessages.forEach(msg => {
+                    const log = document.createElement('div');
+                    log.style.cssText = "font-size:11px; color:var(--text-accent); background:var(--bg-panel); padding:6px 8px; border-radius:6px; border-left:2px solid var(--secondary);";
+                    log.innerText = msg;
+                    container.appendChild(log);
+                });
+            }
+        }
+
+        // Authentication & PubNub Setup
+        function handleAuth() {
+            const dName = document.getElementById('auth-displayname').value.trim();
+            const uName = document.getElementById('auth-username').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-pass').value.trim();
+
+            if (!dName || !uName || !pass) {
+                alert("Please fill all authentication fields.");
+                return;
+            }
+            if (!uName.startsWith('@')) {
+                alert("Username handle must start with '@' (e.g. @neo)");
+                return;
+            }
+
+            myName = dName;
+            myUsername = uName;
+            userChannel = "user_channel_" + myUsername.replace(/[^a-z0-9]/g, '');
+
+            document.getElementById('display-user').innerText = myName;
+            document.getElementById('display-handle').innerText = myUsername;
+            document.getElementById('auth-overlay').style.display = 'none';
+
+            initPubNub(pass);
+            playSciFiSound('send');
+        }
+
+        function initPubNub(password) {
+            pubnub = new PubNub({
+                subscribeKey: "sub-c-529a67a0-0d35-11ee-826a-de64d90959f6",
+                publishKey: "pub-c-461d36d4-8399-4672-880c-fc8885a060cc",
+                uuid: myId,
+                secretKey: password
+            });
+
+            const channels = [GLOBAL_REGISTRY_CHANNEL, userChannel];
+            pubnub.subscribe({ channels: channels });
+
+            pubnub.addListener({
+                message: function(event) {
+                    handleIncomingPubNubMessage(event);
+                },
+                presence: function(event) {
+                    handlePresenceEvent(event);
+                }
+            });
+
+            startAmbientHum();
+            setOnline();
+            addSystemMsg("Connection established with Cybernet grid.");
+            broadcastPresence();
+            setInterval(broadcastPresence, 15000);
+        }
+
+        function setOnline() {
+            const badge = document.getElementById('status-badge');
+            badge.innerText = "System Online";
+            badge.classList.add('online');
+        }
+
+        function broadcastPresence() {
+            if (!pubnub) return;
+            pubnub.publish({
+                channel: GLOBAL_REGISTRY_CHANNEL,
+                message: {
+                    type: 'presence_ping',
+                    username: myUsername,
+                    name: myName,
+                    mood: customMood,
+                    timestamp: Date.now()
+                }
+            });
+        }
+
+        function handlePresenceEvent(event) {
+            // Presence tracking logic
+        }
+
+        function handleIncomingPubNubMessage(event) {
+            const msg = event.message;
+            const channel = event.channel;
+
+            if (channel === GLOBAL_REGISTRY_CHANNEL) {
+                if (msg.type === 'friend_request' && msg.recipientHandle === myUsername) {
+                    incomingRequests.push({ senderName: msg.senderName, senderHandle: msg.senderHandle, senderChannel: msg.senderChannel });
+                    document.getElementById('mail-badge').classList.add('active');
+                    playSciFiSound('receive');
+                    addSystemMsg(`Incoming link request from ${msg.senderName}`);
+                } else if (msg.type === 'friend_accepted' && msg.recipientHandle === myUsername) {
+                    friends.push({ name: msg.senderName, handle: msg.senderHandle, channel: msg.senderChannel });
+                    renderFriendsList();
+                    playSciFiSound('receive');
+                    addSystemMsg(`Link established with ${msg.senderName}`);
+                } else if (msg.type === 'room_invite' && msg.recipientHandle === myUsername) {
+                    pendingInviteRoomCode = msg.roomCode;
+                    document.getElementById('popup-invite-text').innerText = `${msg.senderName} invited you to join secure channel: ${msg.roomCode}`;
+                    document.getElementById('invite-popup-overlay').style.display = 'flex';
+                    playSciFiSound('receive');
+                } else if (msg.type === 'presence_ping') {
+                    if (msg.username !== myUsername) {
+                        activeUsers.add(msg.username);
+                        userMoods[msg.username] = msg.mood;
+                        renderFriendsList();
+                    }
+                }
+            } else if (channel === userChannel) {
+                if (msg.type === 'room_invite') {
+                    pendingInviteRoomCode = msg.roomCode;
+                    document.getElementById('popup-invite-text').innerText = `${msg.senderName} invited you to join secure channel: ${msg.roomCode}`;
+                    document.getElementById('invite-popup-overlay').style.display = 'flex';
+                    playSciFiSound('receive');
+                }
+            } else if (openRooms.includes(channel)) {
+                if (msg.type === 'typing') {
+                    if (msg.username !== myUsername) {
+                        if (msg.isTyping) {
+                            activeTypers[msg.username] = msg.sender;
+                        } else {
+                            delete activeTypers[msg.username];
+                        }
+                        updateTypingIndicator();
+                    }
+                } else {
+                    if (!roomMessages[channel]) roomMessages[channel] = [];
+                    roomMessages[channel].push(msg);
+                    if (channel === activeRoomCode) {
+                        renderMessages();
+                        playSciFiSound('receive');
+                    }
+                }
+            }
+        }
+
+        // Friends & Linking
+        function sendFriendRequest() {
+            const handle = document.getElementById('friend-input').value.trim().toLowerCase();
+            if (!handle || handle === myUsername) {
+                alert("Invalid user handle.");
+                return;
+            }
+            pubnub.publish({
+                channel: GLOBAL_REGISTRY_CHANNEL,
+                message: {
+                    type: 'friend_request',
+                    senderName: myName,
+                    senderHandle: myUsername,
+                    senderChannel: userChannel,
+                    recipientHandle: handle
+                }
+            }, (status) => {
+                if (!status.error) {
+                    alert("Link request transmitted.");
+                    document.getElementById('friend-input').value = '';
+                    playSciFiSound('send');
+                }
+            });
+        }
+
+        function acceptFriendRequest(idx) {
+            const req = incomingRequests.splice(idx, 1)[0];
+            friends.push({ name: req.senderName, handle: req.senderHandle, channel: req.senderChannel });
+            pubnub.publish({
+                channel: GLOBAL_REGISTRY_CHANNEL,
+                message: {
+                    type: 'friend_accepted',
+                    senderName: myName,
+                    senderHandle: myUsername,
+                    senderChannel: userChannel,
+                    recipientHandle: req.senderHandle
+                }
+            });
+            renderInboxContent();
+            renderFriendsList();
+            playSciFiSound('click');
+        }
+
+        function declineFriendRequest(idx) {
+            incomingRequests.splice(idx, 1);
+            renderInboxContent();
+            playSciFiSound('click');
+        }
+
+        function renderFriendsList() {
+            const list = document.getElementById('friends-list');
+            list.innerHTML = '';
+            if (friends.length === 0) {
+                list.innerHTML = '<span style="font-size:11px; color:var(--text-accent); text-align:center; padding:10px;">No links found.</span>';
+                return;
+            }
+            friends.forEach((f, idx) => {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                const isOnline = activeUsers.has(f.handle);
+                card.innerHTML = `
+                    <div class="friend-info" onclick="openDirectChannel('${f.handle}', '${f.name}')">
+                        <div class="status-dot ${isOnline ? 'online' : ''}"></div>
+                        <div class="friend-details">
+                            <span class="friend-name">${escape(f.name)}</span>
+                            <span class="friend-handle">${escape(f.handle)}</span>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="btn-invite-friend" onclick="inviteFriendToActiveRoom('${f.handle}')">Invite</button>
+                        <span class="remove-friend" onclick="removeFriend(${idx})">&times;</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function removeFriend(idx) {
+            friends.splice(idx, 1);
+            renderFriendsList();
+            playSciFiSound('click');
+        }
+
+        // Room Management
+        function promptJoinRoom() {
+            const code = prompt("Enter secure channel code (e.g. net_alpha_7):");
+            if (!code) return;
+            joinRoom(code.trim().toLowerCase());
+        }
+
+        function joinRoom(code) {
+            const channelName = "room_code_" + code;
+            if (!openRooms.includes(channelName)) {
+                openRooms.push(channelName);
+                roomAliases[channelName] = code;
+                pubnub.subscribe({ channels: [channelName] });
+            }
+            switchRoom(channelName);
+            renderTabs();
+            playSciFiSound('click');
+        }
+
+        function switchRoom(channelName) {
+            activeRoomCode = channelName;
+            isWhiteboardActive = false;
+            document.getElementById('messages-view-port').style.display = 'flex';
+            document.getElementById('whiteboard-view').style.display = 'none';
+            document.getElementById('room-display').innerText = `Channel: #${roomAliases[channelName] || 'secure'}`;
+            renderTabs();
+            renderMessages();
+            playSciFiSound('click');
+        }
+
+        function leaveCurrentRoom() {
+            if (!activeRoomCode) return;
+            pubnub.unsubscribe({ channels: [activeRoomCode] });
+            openRooms = openRooms.filter(c => c !== activeRoomCode);
+            activeRoomCode = openRooms.length > 0 ? openRooms[0] : "";
+            if (activeRoomCode) {
+                switchRoom(activeRoomCode);
+            } else {
+                document.getElementById('room-display').innerText = "Channel: Offline";
+                document.getElementById('messages').innerHTML = '';
+            }
+            renderTabs();
+            playSciFiSound('click');
+        }
+
+        function renderTabs() {
+            const list = document.getElementById('tabs-list');
+            list.innerHTML = '';
+            openRooms.forEach(ch => {
+                const tab = document.createElement('div');
+                tab.className = `chat-tab ${activeRoomCode === ch && !isWhiteboardActive ? 'active' : ''}`;
+                tab.innerHTML = `
+                    <span class="tab-title" onclick="switchRoom('${ch}')">#${roomAliases[ch]}</span>
+                    <span class="tab-close-btn" onclick="closeRoomTab('${ch}')">&times;</span>
+                `;
+                list.appendChild(tab);
+            });
+            document.getElementById('tab-whiteboard').classList.toggle('active', isWhiteboardActive);
+        }
+
+        function closeRoomTab(ch) {
+            pubnub.unsubscribe({ channels: [ch] });
+            openRooms = openRooms.filter(c => c !== ch);
+            if (activeRoomCode === ch) {
+                activeRoomCode = openRooms.length > 0 ? openRooms[0] : "";
+                if (activeRoomCode) switchRoom(activeRoomCode);
+            }
+            renderTabs();
+            playSciFiSound('click');
+        }
+
+        function inviteFriend() {
+            if (!activeRoomCode) {
+                alert("Connect to a channel first.");
+                return;
+            }
+            const handle = prompt("Enter contact handle to invite (@USER):");
+            if (!handle) return;
+            inviteFriendToRoom(handle.trim().toLowerCase(), activeRoomCode);
+        }
+
+        function inviteFriendToActiveRoom(handle) {
+            if (!activeRoomCode) {
+                alert("Connect to a channel first.");
+                return;
+            }
+            inviteFriendToRoom(handle, activeRoomCode);
+        }
+
+        function inviteFriendToRoom(handle, roomCode) {
+            pubnub.publish({
+                channel: GLOBAL_REGISTRY_CHANNEL,
+                message: {
+                    type: 'room_invite',
+                    senderName: myName,
+                    senderHandle: myUsername,
+                    roomCode: roomAliases[roomCode],
+                    recipientHandle: handle
+                }
+            }, (status) => {
+                if (!status.error) {
+                    alert("Channel invite transmitted.");
+                    playSciFiSound('send');
+                }
+            });
+        }
+
+        function acceptRoomInvite() {
+            document.getElementById('invite-popup-overlay').style.display = 'none';
+            if (pendingInviteRoomCode) {
+                joinRoom(pendingInviteRoomCode);
+                pendingInviteRoomCode = "";
+            }
+        }
+
+        function declineRoomInvite() {
+            document.getElementById('invite-popup-overlay').style.display = 'none';
+            pendingInviteRoomCode = "";
+        }
+
+        function openDirectChannel(handle, name) {
+            const code = [myUsername, handle].sort().join('_').replace(/[^a-z0-9]/g, '').substr(0, 15);
+            joinRoom("dm_" + code);
+        }
+
+        // Messaging & Media Transmission
+        function send() {
+            if (!activeRoomCode) {
+                alert("Not connected to any active channel.");
+                return;
+            }
+
+            const input = document.getElementById('message-input');
+            let text = input.value.trim();
+
+            if (!text && !pastedImageFile) return;
+
+            // Handle Slash Commands
+            if (text.startsWith('/roll')) {
+                const parts = text.split(' ');
+                let dice = parts[1] || '1d6';
+                let [count, sides] = dice.split('d').map(Number);
+                let total = 0;
+                for (let i = 0; i < (count || 1); i++) {
+                    total += Math.floor(Math.random() * (sides || 6)) + 1;
+                }
+                text = `🎲 Rolled ${dice}: Result [${total}]`;
+            }
+
+            let isSpoiler = isSpoilerModeActive;
+            if (isGlitchModeActive && text) {
+                text = text.split('').map(c => c + '̶').join('');
+            }
+
+            const msgId = "msg_" + Math.random().toString(36).substr(2, 9);
+
+            if (pastedImageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageDataUrl = e.target.result;
+                    publishMessageObject({
+                        id: msgId,
+                        senderId: myId,
+                        sender: myName,
+                        username: myUsername,
+                        text: text,
+                        image: imageDataUrl,
+                        isSpoiler: isSpoiler,
+                        looking: isUserLooking
+                    });
+                    clearPastedImage();
+                };
+                reader.readAsDataURL(pastedImageFile);
+            } else {
+                publishMessageObject({
+                    id: msgId,
+                    senderId: myId,
+                    sender: myName,
+                    username: myUsername,
+                    text: text,
+                    isSpoiler: isSpoiler,
+                    looking: isUserLooking
+                });
+            }
+
+            input.value = '';
+            isGlitchModeActive = false;
+            isSpoilerModeActive = false;
+            document.querySelector('.tool-btn').style.borderColor = "";
+            document.querySelector('.tool-btn').style.boxShadow = "";
+            document.getElementById('spoiler-btn').classList.remove('active-tool');
+
+            isCurrentlyTyping = false;
+            pubnub.publish({
+                channel: activeRoomCode,
+                message: { type: 'typing', username: myUsername, isTyping: false }
+            });
+        }
+
+        function publishMessageObject(msgObj) {
+            pubnub.publish({
+                channel: activeRoomCode,
+                message: msgObj
+            }, (status) => {
+                if (!status.error) {
+                    playSciFiSound('send');
+                }
+            });
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messages');
+            container.innerHTML = '';
+            const messages = roomMessages[activeRoomCode] || [];
+
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                const isSelf = msg.senderId === myId;
+                div.className = `msg ${isSelf ? 'self' : ''}`;
+                div.id = msg.id;
+
+                let contentHtml = '';
+                if (msg.isSpoiler) {
+                    contentHtml = `<span class="spoiler-hidden" onclick="revealSpoiler(this)">${escape(msg.text)}</span>`;
+                } else if (msg.text) {
+                    contentHtml = escape(msg.text);
+                }
+
+                if (msg.image) {
+                    contentHtml += `<img src="${msg.image}" alt="Transmitted Image">`;
+                }
+
+                div.innerHTML = `
+                    <div class="sender-header">
+                        <span>${escape(msg.sender)}</span>
+                        <span class="user-eye ${msg.looking ? 'looking' : 'away'}" title="${msg.looking ? 'User Active' : 'User Away'}">👁️</span>
+                    </div>
+                    <div>${contentHtml}</div>
+                `;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function revealSpoiler(el) {
+            el.classList.remove('spoiler-hidden');
+            el.classList.add('spoiler-revealed');
+            playSciFiSound('click');
+        }
+
+        function toggleGlitchText() {
+            isGlitchModeActive = !isGlitchModeActive;
+            playSciFiSound('click');
+        }
+
+        function toggleSpoilerInput() {
+            isSpoilerModeActive = !isSpoilerModeActive;
+            document.getElementById('spoiler-btn').classList.toggle('active-tool', isSpoilerModeActive);
+            playSciFiSound('click');
+        }
+
+        function handleTypingInput() {
+            if (!activeRoomCode) return;
+            if (!isCurrentlyTyping) {
+                isCurrentlyTyping = true;
+                pubnub.publish({
+                    channel: activeRoomCode,
+                    message: { type: 'typing', username: myUsername, sender: myName, isTyping: true }
+                });
+            }
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isCurrentlyTyping = false;
+                pubnub.publish({
+                    channel: activeRoomCode,
+                    message: { type: 'typing', username: myUsername, isTyping: false }
+                });
+            }, 1500);
+        }
+
+        function updateTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            const typers = Object.values(activeTypers);
+            if (typers.length > 0) {
+                indicator.innerText = `${typers.join(', ')} transmitting signal...`;
+            } else {
+                indicator.innerText = '';
+            }
+        }
+
+        function addSystemMsg(text) {
+            systemMessages.unshift(text);
+            if (systemMessages.length > 20) systemMessages.pop();
+        }
+
+        function escape(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function promptCustomStatus() {
+            const mood = prompt("Set status mood signature:", customMood);
+            if (!mood) return;
+            customMood = mood.trim();
+            document.getElementById('user-status-mood').innerText = customMood;
+            broadcastPresence();
+            playSciFiSound('click');
+        }
+
+        function promptSwitchAccount() {
+            document.getElementById('confirm-switch-overlay').style.display = 'flex';
+        }
+
+        function confirmSwitchAccount() {
+            location.reload();
+        }
+
+        function cancelSwitchAccount() {
+            document.getElementById('confirm-switch-overlay').style.display = 'none';
+        }
+
+        // Whiteboard Functions
+        function openWhiteboardTab() {
+            isWhiteboardActive = true;
+            document.getElementById('messages-view-port').style.display = 'flex';
+            document.getElementById('messages').style.display = 'none';
+            document.getElementById('whiteboard-view').style.display = 'flex';
+            renderTabs();
+            playSciFiSound('click');
+        }
+
+        const wbCanvas = document.getElementById('wb-canvas');
+        const wbCtx = wbCanvas.getContext('2d');
+        let isDrawing = false;
+        let wbColor = '#3b82f6';
+
+        function resizeWbCanvas() {
+            wbCanvas.width = wbCanvas.clientWidth;
+            wbCanvas.height = wbCanvas.clientHeight;
+        }
+        window.addEventListener('resize', resizeWbCanvas);
+        setTimeout(resizeWbCanvas, 200);
+
+        wbCanvas.addEventListener('mousedown', startDrawing);
+        wbCanvas.addEventListener('mousemove', draw);
+        wbCanvas.addEventListener('mouseup', stopDrawing);
+        wbCanvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            wbCtx.beginPath();
+            wbCtx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            wbCtx.strokeStyle = wbColor;
+            wbCtx.lineWidth = 3;
+            wbCtx.lineCap = 'round';
+            wbCtx.lineTo(e.offsetX, e.offsetY);
+            wbCtx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function setWbColor(color) {
+            wbColor = color;
+            playSciFiSound('click');
+        }
+
+        function clearWhiteboard() {
+            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+            playSciFiSound('click');
+        }
+
+        function triggerImageUpload() {
+            document.getElementById('image-upload-input').click();
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function sendDrawingToChat() {
+            if (!activeRoomCode) {
+                alert("Connect to a channel first.");
+                return;
+            }
+            const dataUrl = wbCanvas.toDataURL();
+            const msgId = "msg_" + Math.random().toString(36).substr(2, 9);
+            publishMessageObject({
+                id: msgId,
+                senderId: myId,
+                sender: myName,
+                username: myUsername,
+                text: "🎨 Whiteboard Transmission",
+                image: dataUrl,
+                isSpoiler: false,
+                looking: isUserLooking
+            });
+            switchRoom(activeRoomCode);
+        }
+
+        function toggleVoiceRecorder() {
+            alert("Voice Synth Recorder feature ready.");
+        }
+    </script>
 </body>
 </html>
